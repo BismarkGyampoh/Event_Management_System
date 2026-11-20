@@ -21,9 +21,10 @@ if ($eventId <= 0) {
 
 // Get event details
 $event = fetchOne("
-    SELECT e.*, v.venue_name, v.city, v.address, v.amenities,
+    SELECT e.*, o.full_name AS organizer_name, v.venue_name, v.city, v.address, v.amenities,
            (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired'))) as available_tickets
     FROM Events_007 e
+    INNER JOIN Organizers_007 o ON e.organizer_id = o.organizer_id
     INNER JOIN Venues_007 v ON e.venue_id = v.venue_id
     WHERE e.event_id = ? AND e.event_status = 'published'
 ", [$eventId]);
@@ -133,11 +134,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </nav>
             
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-ticket-alt me-2"></i>Book Ticket</h1>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 booking-page">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom booking-page-header">
+                    <div><p class="section-eyebrow mb-1">One step closer</p><h1>Complete your booking</h1></div>
                     <a href="browse_events.php" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>Back to Events
+                        <i class="fas fa-arrow-left me-1"></i>Back to events
                     </a>
                 </div>
                 
@@ -148,37 +149,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
                 
-                <div class="row">
+                <div class="booking-event-card mb-4">
+                    <img class="booking-event-image" src="<?php echo htmlspecialchars(getEventImageUrl($event['event_id'], $event['cover_image_path'] ?? null, $event['event_category'] ?? null)); ?>" alt="" fetchpriority="high">
+                    <div class="booking-event-copy">
+                        <span class="event-category-label"><?php echo htmlspecialchars($event['event_category'] ?? 'Event'); ?></span>
+                        <h2><?php echo htmlspecialchars($event['event_name']); ?></h2>
+                        <p class="mb-2"><i class="far fa-calendar me-2" aria-hidden="true"></i><?php echo formatDate($event['event_date']); ?><?php if ($event['end_date']): ?> – <?php echo formatDate($event['end_date']); ?><?php endif; ?></p>
+                        <p class="mb-2"><i class="fas fa-location-dot me-2" aria-hidden="true"></i><?php echo htmlspecialchars($event['venue_name'] . ', ' . $event['city']); ?></p>
+                        <p class="mb-0"><i class="far fa-user me-2" aria-hidden="true"></i>Hosted by <?php echo htmlspecialchars($event['organizer_name']); ?></p>
+                    </div>
+                </div>
+
+                <div class="row g-4">
                     <div class="col-lg-8">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card booking-main-card">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0">Confirm Your Booking</h5>
                             </div>
                             <div class="card-body">
-                                <!-- Event Details -->
-                                <div class="p-3 bg-light rounded mb-4">
-                                    <h5 class="fw-bold"><?php echo htmlspecialchars($event['event_name']); ?></h5>
-                                    <p class="mb-1">
-                                        <i class="fas fa-calendar me-2"></i><?php echo formatDate($event['event_date']); ?>
-                                        <?php if ($event['end_date']): ?>
-                                            - <?php echo formatDate($event['end_date']); ?>
-                                        <?php endif; ?>
-                                    </p>
-                                    <p class="mb-1">
-                                        <i class="fas fa-map-marker-alt me-2"></i><?php echo htmlspecialchars($event['venue_name']); ?>, <?php echo htmlspecialchars($event['city']); ?>
-                                    </p>
-                                    <p class="mb-0">
-                                        <i class="fas fa-user me-2"></i>Organized by <?php echo htmlspecialchars($event['organizer_id']); ?>
-                                    </p>
-                                </div>
-                                
                                 <form method="POST">
                                     <?php echo csrfTokenField(); ?>
                                     
                                     <h6 class="fw-bold mb-3">Payment arrangement</h6>
                                     <div class="row g-3 mb-4">
                                         <div class="col-md-8">
-                                            <div class="form-check card p-3">
+                                            <div class="form-check card p-3 booking-choice">
                                                 <input class="form-check-input" type="radio" name="payment_method" 
                                                        id="cash" value="cash" checked>
                                                 <label class="form-check-label w-100" for="cash">
@@ -218,7 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="col-lg-4">
                         <!-- Order Summary -->
-                        <div class="card border-0 shadow-sm">
+                        <div class="card booking-summary-card">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Order Summary</h5>
                             </div>

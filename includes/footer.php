@@ -5,22 +5,25 @@
  */
 ?>
     <!-- Footer -->
-    <footer class="bg-dark text-white py-4 mt-5">
+    <footer class="bg-dark text-white py-5 mt-5">
         <div class="container">
-            <div class="row align-items-center gy-3">
-                <div class="col-md-7 mb-3">
-                    <h5 class="fw-bold"><i class="fas fa-calendar-alt me-2"></i>EventMS</h5>
-                    <p class="small text-muted mb-0">Events, people and places worth making time for.</p>
+            <div class="row gy-4 align-items-start">
+                <div class="col-lg-6">
+                    <a href="<?php echo getBaseUrl(); ?>" class="footer-brand"><i class="fas fa-calendar-days me-2" aria-hidden="true"></i>EventMS</a>
+                    <p class="small text-muted mb-0 mt-2">Find your people. Make a little room for something new.</p>
                 </div>
-                <div class="col-md-5 mb-3 text-md-end">
-                    <a href="<?php echo getBaseUrl(); ?>browse_events.php" class="text-white me-3">Browse events</a>
-                    <a href="<?php echo getBaseUrl(); ?>login.php" class="text-white">Sign in</a>
+                <div class="col-6 col-lg-3">
+                    <p class="footer-heading">Discover</p>
+                    <a class="footer-link" href="<?php echo getBaseUrl(); ?>browse_events.php">Browse events</a>
+                    <a class="footer-link" href="<?php echo getBaseUrl(); ?>#popular-categories">Explore categories</a>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <p class="footer-heading">For organisers</p>
+                    <a class="footer-link" href="<?php echo getBaseUrl() . (function_exists('hasRole') && hasRole('organizer') ? 'organizer/dashboard.php' : 'login.php'); ?>">Host an event</a>
+                    <a class="footer-link" href="<?php echo getBaseUrl(); ?>register.php">Create an account</a>
                 </div>
             </div>
-            <hr class="border-secondary my-3">
-            <div class="small text-muted">
-                &copy; <?php echo date('Y'); ?> EventMS
-            </div>
+            <div class="footer-bottom"><span>&copy; <?php echo date('Y'); ?> EventMS</span><a href="<?php echo getBaseUrl(); ?>login.php">Sign in</a></div>
         </div>
     </footer>
 

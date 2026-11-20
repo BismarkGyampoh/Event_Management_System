@@ -37,89 +37,22 @@ try {
     <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="<?php echo getBaseUrl(); ?>">
-                <i class="fas fa-calendar-alt me-2"></i>EventMS
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="<?php echo getBaseUrl(); ?>">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo getBaseUrl(); ?>browse_events.php">
-                            <i class="fas fa-search me-1"></i>Browse Events
-                        </a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link" href="#popular-categories">Categories</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#how-it-works">How it works</a></li>
-                </ul>
-                
-                <ul class="navbar-nav">
-                    <?php if (isLoggedIn()): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>
-                                <?php echo htmlspecialchars(getCurrentUserName()); ?>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="<?php echo getBaseUrl() . (getCurrentUserRole() === 'admin' ? 'admin/profile.php' : (getCurrentUserRole() === 'organizer' ? 'organizer/profile.php' : 'attendee/profile.php')); ?>">
-                                        <i class="fas fa-id-card me-2"></i>My Profile
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-danger" href="<?php echo getBaseUrl(); ?>logout.php">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light ms-2" href="<?php echo getBaseUrl(); ?>login.php">
-                                <i class="fas fa-sign-in-alt me-1"></i>Login
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-light ms-2" href="<?php echo getBaseUrl(); ?>register.php">Create account</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Flash Messages -->
-    <div class="container mt-3">
-        <?php displayFlashMessages(); ?>
-    </div>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <header class="hero-section">
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-7">
-                    <p class="hero-eyebrow">A local calendar for Ghana</p>
-                    <h1>See what’s happening. Make a plan.</h1>
-                    <p class="lead mb-4">Concerts, workshops, community gatherings and more. Find an event, choose your date, and book your spot.</p>
+                    <p class="hero-eyebrow"><span class="hero-eyebrow-mark" aria-hidden="true"></span>Find your next memorable moment</p>
+                    <h1>Make plans <em>worth looking forward to.</em></h1>
+                    <p class="lead mb-4">Discover live events, local gatherings and new experiences. Find what’s happening and book your place.</p>
                     <div class="hero-actions d-flex flex-wrap gap-3">
                         <a href="<?php echo getBaseUrl(); ?>browse_events.php" class="btn btn-primary btn-lg">
                             Browse events <i class="fas fa-arrow-right ms-2"></i>
                         </a>
                         <?php if (!isLoggedIn()): ?>
-                            <a href="<?php echo getBaseUrl(); ?>login.php" class="btn btn-outline-dark btn-lg">
-                                Organizer sign in
+                            <a href="<?php echo getBaseUrl() . (isLoggedIn() && hasRole('organizer') ? 'organizer/dashboard.php' : 'login.php'); ?>" class="btn btn-outline-dark btn-lg">
+                                Host an event
                             </a>
                         <?php endif; ?>
                     </div>
@@ -184,9 +117,9 @@ try {
 
     <section class="category-section" id="popular-categories">
         <div class="container">
-            <div class="home-section-heading"><p class="section-eyebrow">Explore your interests</p><h2>Find your kind of thing</h2></div>
+            <div class="home-section-heading"><p class="section-eyebrow">Go where your curiosity takes you</p><h2>Explore by interest</h2><p class="home-section-intro">From live music to hands-on learning, find events that feel like you.</p></div>
             <div class="category-grid" aria-label="Browse event categories">
-                <?php foreach (getEventCategories() as $category): ?><a class="category-tile" href="<?php echo getBaseUrl(); ?>browse_events.php?category=<?php echo rawurlencode($category); ?>"><span class="category-icon" aria-hidden="true"><i class="fas <?php echo $category === 'Music' || $category === 'Nightlife' ? 'fa-music' : ($category === 'Technology' ? 'fa-laptop' : ($category === 'Food & Drink' ? 'fa-utensils' : ($category === 'Sports' ? 'fa-basketball' : ($category === 'Learning' ? 'fa-lightbulb' : ($category === 'Health & Wellness' ? 'fa-heart' : 'fa-sparkles'))))); ?>"></i></span><span><?php echo htmlspecialchars($category); ?></span><i class="fas fa-arrow-right category-arrow" aria-hidden="true"></i></a><?php endforeach; ?>
+                <?php foreach (getEventCategories() as $category): ?><a class="category-tile" href="<?php echo getBaseUrl(); ?>browse_events.php?category=<?php echo rawurlencode($category); ?>"><img class="category-tile-image" src="<?php echo htmlspecialchars(getEventImageUrl(0, null, $category)); ?>" alt="" loading="lazy" decoding="async"><span class="category-tile-shade" aria-hidden="true"></span><span class="category-tile-label"><?php echo htmlspecialchars($category); ?><i class="fas fa-arrow-right" aria-hidden="true"></i></span></a><?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -205,11 +138,11 @@ try {
             </div>
             
             <?php if (empty($upcomingEvents)): ?>
-                <div class="empty-state">
-                    <span class="empty-state-mark"><i class="far fa-calendar"></i></span>
-                    <h3>No events on the calendar just yet</h3>
-                    <p class="text-muted mb-3">Check back soon, or browse all events to see what’s available.</p>
-                    <a href="<?php echo getBaseUrl(); ?>browse_events.php" class="btn btn-outline-primary">Browse events</a>
+                <div class="empty-state home-empty-state">
+                    <div class="empty-state-art" aria-hidden="true"><span><i class="far fa-calendar"></i></span><i class="fas fa-sparkles"></i></div>
+                    <div class="empty-state-copy"><p class="section-eyebrow">A little breathing room</p><h3>The calendar is open for something new.</h3>
+                    <p class="text-muted mb-4">There are no upcoming published events right now. Browse by interest or check back when organisers add what’s next.</p>
+                    <a href="<?php echo getBaseUrl(); ?>browse_events.php" class="btn btn-primary">Explore all events <i class="fas fa-arrow-right ms-2"></i></a></div>
                 </div>
             <?php else: ?>
                 <div class="row g-4">
@@ -280,37 +213,14 @@ try {
                     <p>Sign in to create events, manage bookings and keep track of your attendees.</p>
                 </div>
                 <div class="col-lg-4 text-lg-end">
-                    <a href="<?php echo getBaseUrl(); ?>login.php" class="btn btn-light btn-lg">
-                        Organizer sign in <i class="fas fa-arrow-right ms-2"></i>
+                    <a href="<?php echo getBaseUrl() . (isLoggedIn() && hasRole('organizer') ? 'organizer/dashboard.php' : 'login.php'); ?>" class="btn btn-light btn-lg">
+                        Host an event <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="bg-dark text-white py-4">
-        <div class="container">
-            <div class="row align-items-center gy-3">
-                <div class="col-md-7">
-                    <a href="<?php echo getBaseUrl(); ?>" class="text-white fw-semibold">
-                        <i class="fas fa-calendar-alt me-2"></i>EventMS
-                    </a>
-                    <p class="small text-muted mb-0 mt-1">Events, people and places worth making time for.</p>
-                </div>
-                <div class="col-md-5 text-md-end">
-                    <a href="<?php echo getBaseUrl(); ?>browse_events.php" class="text-white me-3">Browse events</a>
-                    <a href="<?php echo getBaseUrl(); ?>login.php" class="text-white">Organizer sign in</a>
-                </div>
-            </div>
-            <hr class="border-secondary my-3">
-            <div class="text-muted small">
-                &copy; <?php echo date('Y'); ?> EventMS
-            </div>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js" integrity="sha384-WyOxWvTyr1QaMPfiPJSv76iReVthorl5uWlFtZPyK0IEB0hGzo9y5Bp9mYanr8Bu" crossorigin="anonymous"></script>
-    <script src="<?php echo getAssetUrl('js/script.js'); ?>"></script>
+    <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

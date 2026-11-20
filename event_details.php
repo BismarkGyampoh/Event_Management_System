@@ -57,7 +57,7 @@ $eventImage = getEventImageUrl($event['event_id'], $event['cover_image_path'] ??
             <img src="<?php echo htmlspecialchars($eventImage); ?>" alt="" fetchpriority="high">
             <div class="event-detail-image-overlay"></div>
             <span class="event-detail-category"><?php echo htmlspecialchars($event['event_category'] ?? 'Event'); ?></span>
-            <div class="event-detail-hero-copy"><p class="event-detail-kicker">An experience to look forward to</p><h1><?php echo htmlspecialchars($event['event_name']); ?></h1><p class="mb-0"><i class="fas fa-user me-2" aria-hidden="true"></i><?php echo htmlspecialchars($event['organizer_name']); ?></p></div>
+            <div class="event-detail-hero-copy"><p class="event-detail-kicker">An experience to look forward to</p><h1><?php echo htmlspecialchars($event['event_name']); ?></h1><div class="event-detail-meta"><span><i class="far fa-calendar me-2" aria-hidden="true"></i><?php echo htmlspecialchars(date('D, M j', strtotime($event['event_date']))); ?></span><span><i class="fas fa-location-dot me-2" aria-hidden="true"></i><?php echo htmlspecialchars($event['city']); ?></span><span><i class="far fa-user me-2" aria-hidden="true"></i><?php echo htmlspecialchars($event['organizer_name']); ?></span></div></div>
         </div>
         <div class="row g-4 g-xl-5 mt-1">
             <div class="col-lg-8">

@@ -92,84 +92,28 @@ $totalPages = ceil($totalEvents / $perPage);
     <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="<?php echo getBaseUrl(); ?>">
-                <i class="fas fa-calendar-alt me-2"></i>EventMS
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo getBaseUrl(); ?>">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="<?php echo getBaseUrl(); ?>browse_events.php">
-                            <i class="fas fa-search me-1"></i>Browse Events
-                        </a>
-                    </li>
-                </ul>
-                
-                <ul class="navbar-nav">
-                    <?php if (isLoggedIn()): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>
-                                <?php echo htmlspecialchars(getCurrentUserName()); ?>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="<?php echo getBaseUrl() . (getCurrentUserRole() === 'admin' ? 'admin/profile.php' : (getCurrentUserRole() === 'organizer' ? 'organizer/profile.php' : 'attendee/profile.php')); ?>">
-                                        <i class="fas fa-id-card me-2"></i>My Profile
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-danger" href="<?php echo getBaseUrl(); ?>logout.php">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light ms-2" href="<?php echo getBaseUrl(); ?>login.php">
-                                <i class="fas fa-sign-in-alt me-1"></i>Login
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-light ms-2" href="<?php echo getBaseUrl(); ?>register.php">Create account</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Flash Messages -->
-    <div class="container mt-3">
-        <?php displayFlashMessages(); ?>
-    </div>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <!-- Main Content -->
-    <main class="py-5">
+    <main class="py-5 browse-page">
         <div class="container">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4">
-                <h1 class="h2"><i class="fas fa-search me-2"></i>Browse Events</h1>
+            <div class="discovery-intro mb-4">
+                <p class="section-eyebrow mb-2">Find your next experience</p>
+                <h1>Explore events</h1>
+                <p>Good plans start with a little discovery. Search by what you love, when you’re free, or where you want to go.</p>
             </div>
+
+            <nav class="category-filter-pills mb-4" aria-label="Filter events by category">
+                <a class="category-filter-pill <?php echo $category === '' ? 'active' : ''; ?>" href="<?php echo getBaseUrl(); ?>browse_events.php">All events</a>
+                <?php foreach ($categories as $categoryOption): ?>
+                    <a class="category-filter-pill <?php echo $category === $categoryOption ? 'active' : ''; ?>" href="<?php echo getBaseUrl(); ?>browse_events.php?<?php echo htmlspecialchars(http_build_query(array_filter(['category' => $categoryOption, 'city' => $city, 'date_from' => $dateFrom, 'date_to' => $dateTo, 'sort' => $sort]))); ?>"><?php echo htmlspecialchars($categoryOption); ?></a>
+                <?php endforeach; ?>
+            </nav>
             
             <!-- Search and Filter -->
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card discovery-filter-panel mb-5">
                 <div class="card-body">
-                    <form method="GET" class="row g-3">
+                    <form method="GET" class="row g-3" role="search">
                         <div class="col-md-4">
                             <label class="form-label" for="event-search">Search events</label>
                             <input id="event-search" type="search" class="form-control" name="search" 
@@ -206,14 +150,20 @@ $totalPages = ceil($totalEvents / $perPage);
                 </div>
             </div>
             
+            <div class="events-results-header mb-3">
+                <div><p class="section-eyebrow mb-1">Your shortlist</p><h2><?php echo $totalEvents ? number_format((int)$totalEvents) . ' events to explore' : 'Nothing matches yet'; ?></h2></div>
+                <?php if ($search !== '' || $category !== '' || $city !== '' || $dateFrom !== '' || $dateTo !== ''): ?><a class="clear-filters-link" href="<?php echo getBaseUrl(); ?>browse_events.php">Clear filters</a><?php endif; ?>
+            </div>
+
             <!-- Events Grid -->
             <div class="row g-4">
                 <?php if (empty($events)): ?>
                     <div class="col-12">
-                        <div class="empty-state">
-                            <span class="empty-state-mark"><i class="far fa-calendar"></i></span>
-                            <h3>No events found</h3>
-                            <p class="text-muted mb-0">Try adjusting your filters, or check back later.</p>
+                        <div class="empty-state discovery-empty-state">
+                            <span class="empty-state-mark"><i class="fas fa-compass"></i></span>
+                            <h3>No events match those filters</h3>
+                            <p class="text-muted mb-3">Try another category, city, or date range to open up more possibilities.</p>
+                            <a href="<?php echo getBaseUrl(); ?>browse_events.php" class="btn btn-primary">See all events</a>
                         </div>
                     </div>
                 <?php else: ?>
@@ -254,15 +204,9 @@ $totalPages = ceil($totalEvents / $perPage);
                                         </span>
                                     </div>
                                     <?php if ($event['available_tickets'] > 0): ?>
-                                        <?php if (isLoggedIn()): ?>
-                                            <a href="<?php echo getBaseUrl(); ?>attendee/book_ticket.php?event_id=<?php echo $event['event_id']; ?>" class="btn btn-primary w-100 mt-2">
-                                                <i class="fas fa-arrow-right me-1"></i>View event
-                                            </a>
-                                        <?php else: ?>
-                                            <a href="<?php echo getBaseUrl(); ?>login.php" class="btn btn-primary w-100 mt-2">
-                                                <i class="fas fa-arrow-right me-1"></i>View event
-                                            </a>
-                                        <?php endif; ?>
+                                        <a href="<?php echo getBaseUrl(); ?>event_details.php?event_id=<?php echo (int)$event['event_id']; ?>" class="btn btn-primary w-100 mt-2">
+                                            View event <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
                                     <?php else: ?>
                                         <button class="btn btn-secondary w-100 mt-2" disabled>Sold Out</button>
                                     <?php endif; ?>
@@ -294,29 +238,6 @@ $totalPages = ceil($totalEvents / $perPage);
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5 class="fw-bold"><i class="fas fa-calendar-alt me-2"></i>EventMS</h5>
-                    <p class="small text-muted">Your complete event management solution.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
-                    <a href="#" class="text-white me-3"><i class="fab fa-twitter fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
-                </div>
-            </div>
-            <hr class="border-secondary">
-            <div class="text-center text-muted small">
-                &copy; <?php echo date('Y'); ?> Event Management System. All rights reserved.
-            </div>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js" integrity="sha384-WyOxWvTyr1QaMPfiPJSv76iReVthorl5uWlFtZPyK0IEB0hGzo9y5Bp9mYanr8Bu" crossorigin="anonymous"></script>
-    <script src="<?php echo getAssetUrl('js/script.js'); ?>"></script>
+    <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>
