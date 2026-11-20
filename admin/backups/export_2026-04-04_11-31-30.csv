@@ -1,0 +1,57 @@
+"=== Organizers_007 ==="
+organizer_id,username,password,email,full_name,phone,company_name,approval_status,created_at,updated_at
+1,organizer_kwame,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,kwame@eventghana.com,"Kwame Asante",+233-20-123-4567,"Asante Events Ghana",approved,"2026-04-04 11:23:48.3533333","2026-04-04 11:23:48.3533333"
+2,organizer_ama,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,ama@eventghana.com,"Ama Mensah",+233-24-567-8901,"Mensah Productions Ltd",approved,"2026-04-04 11:23:48.3533333","2026-04-04 11:23:48.3533333"
+3,organizer_kofi,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,kofi@eventghana.com,"Kofi Boateng",+233-27-901-2345,"Boateng Events & Co.",pending,"2026-04-04 11:23:48.3533333","2026-04-04 11:23:48.3533333"
+4,organizer_akua,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,akuamensah@gmail.com,"Akua Mensah",+233-20-000-0000,"Akua Events Ghana",approved,"2026-04-04 11:23:48.3533333","2026-04-04 11:23:48.3533333"
+
+"=== Attendees_007 ==="
+attendee_id,email,password,full_name,phone,address,loyalty_points,created_at,updated_at
+1,akua.mensah@gmail.com,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,"Akua Mensah",+233-24-111-2222,"15 Oxford Street, Osu, Accra",150,"2026-04-04 11:23:48.3733333","2026-04-04 11:23:48.3733333"
+2,yaw.owusu@gmail.com,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,"Yaw Owusu",+233-20-333-4444,"10 Ring Road, Cantonments, Accra",75,"2026-04-04 11:23:48.3733333","2026-04-04 11:23:48.3733333"
+3,adwoa.boateng@gmail.com,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,"Adwoa Boateng",+233-27-555-6666,"25 Liberation Road, Airport Residential, Accra",520,"2026-04-04 11:23:48.3733333","2026-04-04 11:23:48.3733333"
+4,kwadwo.ampofo@gmail.com,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,"Kwadwo Ampofo",+233-55-777-8888,"8 Adum Road, Kumasi",25,"2026-04-04 11:23:48.3733333","2026-04-04 11:23:48.3733333"
+5,efua.darko@gmail.com,$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi,"Efua Darko",+233-24-999-0000,"42 High Street, Takoradi",1100,"2026-04-04 11:23:48.3733333","2026-04-04 11:23:48.3733333"
+
+"=== Events_007 ==="
+event_id,organizer_id,venue_id,event_name,event_description,event_date,end_date,ticket_price,max_capacity,event_status,created_at,updated_at
+1,1,1,"Ghana Tech Summit 2026","Premier technology conference showcasing African innovation and startups","2026-03-15 09:00:00.0000000","2026-03-17 18:00:00.0000000",450.00,1500,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+2,1,2,"Afrochella Music Festival","Celebrating African music, art, and culture over three amazing days","2026-04-20 12:00:00.0000000","2026-04-22 23:00:00.0000000",200.00,3000,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+3,2,3,"Ghana Business Excellence Summit","Networking event for Ghana's top business leaders and entrepreneurs","2026-05-10 08:00:00.0000000","2026-05-10 20:00:00.0000000",750.00,500,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+4,2,4,"Comedy Night Accra","Stand-up comedy featuring Ghana's funniest comedians","2026-03-25 19:00:00.0000000","2026-03-25 23:00:00.0000000",100.00,800,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+5,3,5,"Kumasi Arts & Crafts Exhibition","Showcasing traditional and contemporary Ashanti art","2026-06-01 10:00:00.0000000","2026-06-30 18:00:00.0000000",30.00,2000,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+6,1,6,"Pan-African Leadership Conference","Bringing together leaders from across the African continent","2026-07-15 08:00:00.0000000","2026-07-18 18:00:00.0000000",1200.00,400,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+7,2,7,"Western Region Trade Fair","Exhibition of products and services from Western Ghana","2026-08-05 09:00:00.0000000","2026-08-12 18:00:00.0000000",50.00,500,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+8,3,1,"Ghana Fashion Week","Showcasing the best of African fashion and design","2026-09-10 18:00:00.0000000","2026-09-13 22:00:00.0000000",150.00,1200,published,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+9,1,2,"Startup Grind Accra","Workshop series for aspiring entrepreneurs","2026-04-05 09:00:00.0000000","2026-04-05 17:00:00.0000000",150.00,200,draft,"2026-04-04 11:23:48.3700000","2026-04-04 11:23:48.3700000"
+
+"=== Tickets_007 ==="
+ticket_id,event_id,attendee_id,ticket_number,ticket_status,booking_date,check_in_time
+1,1,1,TKT-1-123456-100,booked,"2026-04-04 11:23:48.3933333",
+2,1,2,TKT-1-123457-200,booked,"2026-04-04 11:23:48.3933333",
+3,1,3,TKT-1-123458-300,booked,"2026-04-04 11:23:48.3933333",
+4,2,1,TKT-2-123459-400,booked,"2026-04-04 11:23:48.3933333",
+5,2,4,TKT-2-123460-500,booked,"2026-04-04 11:23:48.3933333",
+6,3,2,TKT-3-123461-600,booked,"2026-04-04 11:23:48.3933333",
+7,3,5,TKT-3-123462-700,booked,"2026-04-04 11:23:48.3933333",
+
+"=== Payments_007 ==="
+payment_id,ticket_id,attendee_id,amount,payment_method,payment_status,payment_date
+1,1,1,450.00,credit_card,completed,"2026-04-04 11:23:48.4033333"
+2,2,2,450.00,debit_card,completed,"2026-04-04 11:23:48.4033333"
+3,3,3,450.00,online,completed,"2026-04-04 11:23:48.4033333"
+4,4,1,200.00,credit_card,completed,"2026-04-04 11:23:48.4033333"
+5,5,4,200.00,credit_card,completed,"2026-04-04 11:23:48.4033333"
+6,6,2,750.00,credit_card,completed,"2026-04-04 11:23:48.4033333"
+7,7,5,750.00,online,completed,"2026-04-04 11:23:48.4033333"
+
+"=== Venues_007 ==="
+venue_id,venue_name,address,city,state,zip_code,capacity,amenities,created_at
+1,"Accra International Conference Centre","Independence Avenue, Ridge",Accra,"Greater Accra",00233,2000,"WiFi, Air Conditioning, Catering, AV Equipment, Parking","2026-04-04 11:23:48.3566667"
+2,"National Theatre of Ghana","Independence Avenue",Accra,"Greater Accra",00233,1500,"Stage, Sound System, Green Room, Lighting","2026-04-04 11:23:48.3566667"
+3,"Kwame Nkrumah Memorial Park","High Street",Accra,"Greater Accra",00233,5000,"Outdoor Space, Historical Site, Parking, Security","2026-04-04 11:23:48.3566667"
+4,"University of Ghana Legon Auditorium","Legon Campus",Accra,"Greater Accra",00233,1200,"WiFi, Projector, Air Conditioning, Parking","2026-04-04 11:23:48.3566667"
+5,"Kumasi Cultural Centre","Bantama Road",Kumasi,Ashanti,00233,3000,"Cultural Exhibits, Outdoor Space, Parking, Food Court","2026-04-04 11:23:48.3566667"
+6,"Labadi Beach Hotel Conference Hall","Labadi Beach Road",Accra,"Greater Accra",00233,800,"Beach View, WiFi, Catering, AC, Swimming Pool Access","2026-04-04 11:23:48.3566667"
+7,"Takoradi Mall Event Space","Market Circle",Takoradi,Western,00233,600,"Modern Facilities, WiFi, Parking, Food Court","2026-04-04 11:23:48.3566667"
+
