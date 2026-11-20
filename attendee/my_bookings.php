@@ -62,12 +62,13 @@ try {
     $bookings = fetchAll("
         SELECT t.ticket_id, t.ticket_number, t.ticket_status, t.booking_date,
                e.event_name, e.event_date, e.ticket_price, e.event_id, e.event_status,
-               v.venue_name, v.city, v.address,
+               v.venue_name, v.city, v.address, b.booking_id AS marketplace_booking_id, b.status AS marketplace_booking_status,
                p.amount as payment_amount, p.payment_status as payment_status
         FROM Tickets_007 t
         INNER JOIN Events_007 e ON t.event_id = e.event_id
         INNER JOIN Venues_007 v ON e.venue_id = v.venue_id
         LEFT JOIN Payments_007 p ON t.ticket_id = p.ticket_id
+        LEFT JOIN BookingOrders_007 b ON b.booking_id = t.booking_id
         WHERE t.attendee_id = :attendee_id
         ORDER BY e.event_date DESC
         LIMIT $perPage OFFSET $offset
@@ -213,6 +214,13 @@ $totalPages = ceil($totalBookings / $perPage);
                                                             <button type="submit" class="btn btn-sm btn-outline-danger mb-1">
                                                                 <i class="fas fa-times"></i> Cancel
                                                             </button>
+                                                        </form>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($booking['marketplace_booking_id']) && $booking['marketplace_booking_status'] === 'paid'): ?>
+                                                        <form method="post" action="request_refund.php" class="mt-1">
+                                                            <?php echo csrfTokenField(); ?><input type="hidden" name="booking_id" value="<?php echo (int)$booking['marketplace_booking_id']; ?>">
+                                                            <input type="hidden" name="reason" value="Attendee requested a refund">
+                                                            <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Submit this booking for administrator refund review?')">Request refund</button>
                                                         </form>
                                                     <?php endif; ?>
                                                 </td>

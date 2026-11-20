@@ -10,18 +10,38 @@ require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'Browse Events - Event Management System';
 
 // Get search/filter parameters
-$search = $_GET['search'] ?? '';
-$dateFrom = $_GET['date_from'] ?? '';
-$dateTo = $_GET['date_to'] ?? '';
+$search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+$search = mb_substr($search, 0, 120);
+$dateFrom = is_string($_GET['date_from'] ?? null) && preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $_GET['date_from']) ? $_GET['date_from'] : '';
+$dateTo = is_string($_GET['date_to'] ?? null) && preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $_GET['date_to']) ? $_GET['date_to'] : '';
+$category = is_string($_GET['category'] ?? null) ? $_GET['category'] : '';
+$city = is_string($_GET['city'] ?? null) ? trim($_GET['city']) : '';
+$sort = is_string($_GET['sort'] ?? null) ? $_GET['sort'] : 'date_asc';
+$categories = getEventCategories();
+if (!in_array($category, $categories, true)) $category = '';
+if (strlen($city) > 100) $city = substr($city, 0, 100);
+if (!in_array($sort, ['date_asc', 'price_asc', 'price_desc'], true)) $sort = 'date_asc';
 
 // Build query
 $whereConditions = ["e.event_status = 'published'", "e.event_date > CURRENT_TIMESTAMP"];
 $params = [];
 
 if (!empty($search)) {
-    $whereConditions[] = "(e.event_name LIKE ? OR e.event_description LIKE ?)";
+    $whereConditions[] = "(e.event_name ILIKE ? OR e.event_description ILIKE ? OR e.event_category ILIKE ? OR EXISTS (SELECT 1 FROM Venues_007 sv WHERE sv.venue_id = e.venue_id AND sv.city ILIKE ?))";
     $params[] = "%$search%";
     $params[] = "%$search%";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+}
+
+if ($category !== '') {
+    $whereConditions[] = 'e.event_category = ?';
+    $params[] = $category;
+}
+
+if ($city !== '') {
+    $whereConditions[] = 'EXISTS (SELECT 1 FROM Venues_007 cv WHERE cv.venue_id = e.venue_id AND cv.city ILIKE ?)';
+    $params[] = '%' . $city . '%';
 }
 
 if (!empty($dateFrom)) {
@@ -37,7 +57,7 @@ if (!empty($dateTo)) {
 $whereClause = implode(" AND ", $whereConditions);
 
 // Get events with pagination
-$page = max(1, (int)($_GET['page'] ?? 1));
+$page = min(100000, max(1, (int)($_GET['page'] ?? 1)));
 $perPage = 9;
 $offset = ($page - 1) * $perPage;
 
@@ -46,12 +66,12 @@ try {
     
     $events = fetchAll("
         SELECT e.*, o.full_name as organizer_name, v.venue_name, v.city,
-               (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status != 'cancelled')) as available_tickets
+               (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired'))) as available_tickets
         FROM Events_007 e
         INNER JOIN Organizers_007 o ON e.organizer_id = o.organizer_id
         INNER JOIN Venues_007 v ON e.venue_id = v.venue_id
         WHERE $whereClause
-        ORDER BY e.event_date ASC
+        ORDER BY " . ($sort === 'price_asc' ? 'e.ticket_price ASC, e.event_date ASC' : ($sort === 'price_desc' ? 'e.ticket_price DESC, e.event_date ASC' : 'e.event_date ASC')) . "
         LIMIT $perPage OFFSET $offset
     ", $params);
 } catch (Exception $e) {
@@ -107,7 +127,7 @@ $totalPages = ceil($totalEvents / $perPage);
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="<?php echo getBaseUrl(); ?>attendee/profile.php">
+                                    <a class="dropdown-item" href="<?php echo getBaseUrl() . (getCurrentUserRole() === 'admin' ? 'admin/profile.php' : (getCurrentUserRole() === 'organizer' ? 'organizer/profile.php' : 'attendee/profile.php')); ?>">
                                         <i class="fas fa-id-card me-2"></i>My Profile
                                     </a>
                                 </li>
@@ -151,19 +171,31 @@ $totalPages = ceil($totalEvents / $perPage);
                 <div class="card-body">
                     <form method="GET" class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">Search</label>
-                            <input type="text" class="form-control" name="search" 
+                            <label class="form-label" for="event-search">Search events</label>
+                            <input id="event-search" type="search" class="form-control" name="search" 
                                    placeholder="Search events..." value="<?php echo htmlspecialchars($search); ?>">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Date From</label>
-                            <input type="date" class="form-control" name="date_from" value="<?php echo htmlspecialchars($dateFrom); ?>">
+                            <label class="form-label" for="date-from">From</label>
+                            <input id="date-from" type="date" class="form-control" name="date_from" value="<?php echo htmlspecialchars($dateFrom); ?>">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Date To</label>
-                            <input type="date" class="form-control" name="date_to" value="<?php echo htmlspecialchars($dateTo); ?>">
+                            <label class="form-label" for="date-to">To</label>
+                            <input id="date-to" type="date" class="form-control" name="date_to" value="<?php echo htmlspecialchars($dateTo); ?>">
                         </div>
-                        <div class="col-md-2 d-flex align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label" for="event-category">Category</label>
+                            <select id="event-category" class="form-select" name="category"><option value="">All categories</option><?php foreach ($categories as $categoryOption): ?><option value="<?php echo htmlspecialchars($categoryOption); ?>" <?php echo $category === $categoryOption ? 'selected' : ''; ?>><?php echo htmlspecialchars($categoryOption); ?></option><?php endforeach; ?></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="event-city">City</label>
+                            <input id="event-city" type="search" class="form-control" name="city" placeholder="Any city" value="<?php echo htmlspecialchars($city); ?>">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="event-sort">Sort by</label>
+                            <select id="event-sort" class="form-select" name="sort"><option value="date_asc" <?php echo $sort === 'date_asc' ? 'selected' : ''; ?>>Soonest</option><option value="price_asc" <?php echo $sort === 'price_asc' ? 'selected' : ''; ?>>Price: low to high</option><option value="price_desc" <?php echo $sort === 'price_desc' ? 'selected' : ''; ?>>Price: high to low</option></select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
                             <div class="d-grid gap-2 w-100">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search me-1"></i>Search
@@ -189,7 +221,7 @@ $totalPages = ceil($totalEvents / $perPage);
                         <div class="col-xl-4 col-md-6">
                             <div class="card h-100 border-0 shadow-sm event-card">
                                 <div class="event-card-media">
-                                    <img class="event-card-image" src="<?php echo getEventImageUrl($event['event_id']); ?>" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+                                    <img class="event-card-image" src="<?php echo htmlspecialchars(getEventImageUrl($event['event_id'], $event['cover_image_path'] ?? null, $event['event_category'] ?? null)); ?>" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
                                     <time class="event-date-chip" datetime="<?php echo htmlspecialchars(date('Y-m-d', strtotime($event['event_date']))); ?>">
                                         <span><?php echo htmlspecialchars(date('M', strtotime($event['event_date']))); ?></span>
                                         <strong><?php echo htmlspecialchars(date('d', strtotime($event['event_date']))); ?></strong>
@@ -201,7 +233,8 @@ $totalPages = ceil($totalEvents / $perPage);
                                     </span>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title fw-bold"><?php echo htmlspecialchars($event['event_name']); ?></h5>
+                                    <h5 class="card-title fw-bold"><a href="event_details.php?event_id=<?php echo (int)$event['event_id']; ?>"><?php echo htmlspecialchars($event['event_name']); ?></a></h5>
+                                    <span class="event-category-label"><?php echo htmlspecialchars($event['event_category'] ?? 'Other'); ?></span>
                                     <p class="text-muted small mb-2">
                                         <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($event['organizer_name']); ?>
                                     </p>
@@ -223,11 +256,11 @@ $totalPages = ceil($totalEvents / $perPage);
                                     <?php if ($event['available_tickets'] > 0): ?>
                                         <?php if (isLoggedIn()): ?>
                                             <a href="<?php echo getBaseUrl(); ?>attendee/book_ticket.php?event_id=<?php echo $event['event_id']; ?>" class="btn btn-primary w-100 mt-2">
-                                                <i class="fas fa-ticket-alt me-1"></i>Book Now
+                                                <i class="fas fa-arrow-right me-1"></i>View event
                                             </a>
                                         <?php else: ?>
                                             <a href="<?php echo getBaseUrl(); ?>login.php" class="btn btn-primary w-100 mt-2">
-                                                <i class="fas fa-sign-in-alt me-1"></i>Login to Book
+                                                <i class="fas fa-arrow-right me-1"></i>View event
                                             </a>
                                         <?php endif; ?>
                                     <?php else: ?>

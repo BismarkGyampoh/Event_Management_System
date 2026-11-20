@@ -32,7 +32,7 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- Public Navigation -->
+                <!-- Shared navigation; role-specific links live in each dashboard sidebar. -->
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link <?php echo $currentPage == 'index' ? 'active' : ''; ?>" 
@@ -40,81 +40,12 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                             <i class="fas fa-home me-1"></i>Home
                         </a>
                     </li>
-                    <?php if ($isLoggedIn): ?>
-                        <!-- Role-based Navigation -->
-                        <?php if ($userRole === 'admin'): ?>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" 
-                                   href="dashboard.php">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'manage_users' ? 'active' : ''; ?>" 
-                                   href="manage_users.php">
-                                    <i class="fas fa-users-cog me-1"></i>Users
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'audit_logs' ? 'active' : ''; ?>" 
-                                   href="audit_logs.php">
-                                    <i class="fas fa-history me-1"></i>Audit Logs
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'reports' ? 'active' : ''; ?>" 
-                                   href="reports.php">
-                                    <i class="fas fa-chart-bar me-1"></i>Reports
-                                </a>
-                            </li>
-                        
-                        <?php elseif ($userRole === 'organizer'): ?>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'dashboard' ? 'active' : ''; ?>" 
-                                   href="dashboard.php">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'my_events' ? 'active' : ''; ?>" 
-                                   href="my_events.php">
-                                    <i class="fas fa-calendar me-1"></i>My Events
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'create_event' ? 'active' : ''; ?>" 
-                                   href="create_event.php">
-                                    <i class="fas fa-plus-circle me-1"></i>Create Event
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'view_booking' ? 'active' : ''; ?>" 
-                                   href="view_booking.php">
-                                    <i class="fas fa-ticket-alt me-1"></i>Bookings
-                                </a>
-                            </li>
-                        
-                        <?php elseif ($userRole === 'attendee'): ?>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'browse_events' ? 'active' : ''; ?>" 
-                                   href="browse_events.php">
-                                    <i class="fas fa-search me-1"></i>Browse Events
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'my_bookings' ? 'active' : ''; ?>" 
-                                   href="my_bookings.php">
-                                    <i class="fas fa-ticket-alt me-1"></i>My Bookings
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php echo $currentPage == 'profile' ? 'active' : ''; ?>" 
-                                   href="profile.php">
-                                    <i class="fas fa-user me-1"></i>Profile
-                                </a>
-                            </li>
-                        <?php endif; ?>
-                    <?php endif; ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo $currentPage == 'browse_events' ? 'active' : ''; ?>" href="<?php echo getBaseUrl(); ?>browse_events.php">
+                            <i class="fas fa-compass me-1"></i>Explore
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo getBaseUrl(); ?>#popular-categories">Categories</a></li>
                 </ul>
                 
                 <!-- User Menu -->
@@ -127,6 +58,13 @@ $currentPage = basename($_SERVER['PHP_SELF'], '.php');
                                 <span class="badge bg-secondary ms-1"><?php echo ucfirst($userRole); ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
+                                <?php if ($userRole === 'admin'): ?>
+                                    <li><a class="dropdown-item" href="<?php echo getBaseUrl(); ?>admin/dashboard.php"><i class="fas fa-gauge-high me-2"></i>Dashboard</a></li>
+                                <?php elseif ($userRole === 'organizer'): ?>
+                                    <li><a class="dropdown-item" href="<?php echo getBaseUrl(); ?>organizer/dashboard.php"><i class="fas fa-gauge-high me-2"></i>Dashboard</a></li>
+                                <?php elseif ($userRole === 'attendee'): ?>
+                                    <li><a class="dropdown-item" href="<?php echo getBaseUrl(); ?>attendee/dashboard.php"><i class="fas fa-gauge-high me-2"></i>Dashboard</a></li>
+                                <?php endif; ?>
                                 <?php if ($userRole === 'admin'): ?>
                                     <li>
                                         <a class="dropdown-item" href="<?php echo getBaseUrl(); ?>admin/profile.php">

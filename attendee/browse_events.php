@@ -65,7 +65,7 @@ try {
     
     $events = fetchAll("
         SELECT e.*, o.full_name as organizer_name, v.venue_name, v.city, v.address,
-               (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status != 'cancelled')) as available_tickets
+               (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired'))) as available_tickets
         FROM Events_007 e
         INNER JOIN Organizers_007 o ON e.organizer_id = o.organizer_id
         INNER JOIN Venues_007 v ON e.venue_id = v.venue_id

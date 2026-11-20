@@ -52,16 +52,80 @@ function getAssetUrl($path) {
 }
 
 /** Return a rotating set of photographic event covers for event cards. */
-function getEventImageUrl($eventId) {
-    $images = [
-        'photo-1501281668745-f7f57925c3b4',
-        'photo-1506157786151-b8491531f063',
-        'photo-1514525253161-7a46d19cd819',
-        'photo-1511795409834-ef04bbd61622',
-        'photo-1517457373958-b7bdd4587205',
+function getEventImageUrl($eventId, $coverImagePath = null, $category = null) {
+    if (is_string($coverImagePath)
+        && preg_match('/\Aevent-covers\/[a-f0-9]{32}\.(?:jpg|png|webp)\z/', $coverImagePath)) {
+        $localPath = __DIR__ . '/../assets/' . str_replace('/', DIRECTORY_SEPARATOR, $coverImagePath);
+        if (is_file($localPath)) {
+            return getAssetUrl($coverImagePath);
+        }
+    }
+
+    $categoryImages = [
+        'Arts & Culture' => 'photo-1503095396549-807759245b35',
+        'Community' => 'photo-1511632765486-a01980e01a18',
+        'Food & Drink' => 'photo-1517248135467-4c7edcad34c4',
+        'Health & Wellness' => 'photo-1544367567-0f2fcb009e0b',
+        'Learning' => 'photo-1524178232363-1fb2b075b655',
+        'Music' => 'photo-1506157786151-b8491531f063',
+        'Nightlife' => 'photo-1470229722913-7c0e2dbbafd3',
+        'Sports' => 'photo-1461896836934-ffe607ba821e',
+        'Technology' => 'photo-1540575467063-178a50c2df87',
+        'Other' => 'photo-1511795409834-ef04bbd61622',
     ];
-    $index = abs((int)$eventId) % count($images);
-    return 'https://images.unsplash.com/' . $images[$index] . '?auto=format&fit=crop&w=900&q=82';
+    $image = $categoryImages[$category] ?? $categoryImages['Other'];
+    if (!isset($categoryImages[$category ?? ''])) {
+        $fallbackImages = array_values($categoryImages);
+        $image = $fallbackImages[abs((int)$eventId) % count($fallbackImages)];
+    }
+    return 'https://images.unsplash.com/' . $image . '?auto=format&fit=crop&w=1000&q=84';
+}
+
+function getEventCategories() {
+    return ['Arts & Culture', 'Community', 'Food & Drink', 'Health & Wellness', 'Learning', 'Music', 'Nightlife', 'Sports', 'Technology', 'Other'];
+}
+
+/** Normalize PostgreSQL boolean values when the driver returns native bools or t/f strings. */
+function isDatabaseBooleanTrue($value) {
+    return $value === true || $value === 1 || $value === '1'
+        || (is_string($value) && in_array(strtolower($value), ['t', 'true', 'yes'], true));
+}
+
+function expireStaleReservations() {
+    try {
+        fetchOne('SELECT ExpireReservations_007() AS expired_count');
+    } catch (Throwable $e) {
+        error_log('Reservation expiry task could not run.');
+    }
+}
+
+function saveEventCoverUpload($file) {
+    if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK
+        || !isset($file['tmp_name'], $file['size'])
+        || (int)$file['size'] < 1 || (int)$file['size'] > 5 * 1024 * 1024
+        || !is_uploaded_file($file['tmp_name'])) {
+        throw new RuntimeException('Choose an image smaller than 5 MB.');
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']);
+    $extensions = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+    if (!isset($extensions[$mime]) || @getimagesize($file['tmp_name']) === false) {
+        throw new RuntimeException('Use a valid JPEG, PNG, or WebP image.');
+    }
+
+    $uploadDirectory = __DIR__ . '/../assets/event-covers';
+    if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0755, true) && !is_dir($uploadDirectory)) {
+        throw new RuntimeException('Image storage is unavailable.');
+    }
+    $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
+    if (!move_uploaded_file($file['tmp_name'], $uploadDirectory . '/' . $filename)) {
+        throw new RuntimeException('The event image could not be saved.');
+    }
+    return 'event-covers/' . $filename;
 }
 
 /**
@@ -321,6 +385,7 @@ function getStatusBadgeClass($status) {
         'published' => 'success',
         'draft' => 'secondary',
         'cancelled' => 'danger',
+        'expired' => 'secondary',
         'completed' => 'info',
         'booked' => 'success',
         'confirmed' => 'success',

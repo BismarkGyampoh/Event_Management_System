@@ -13,10 +13,19 @@ $pageTitle = 'Organizer Dashboard - Event Management System';
 $organizerId = getCurrentUserId();
 
 try {
+    $marketStats = fetchOne("SELECT COUNT(*) FILTER (WHERE b.status = 'paid') AS paid_orders,
+        COALESCE(SUM(b.gross_minor) FILTER (WHERE b.status IN ('paid','refund_pending')), 0) AS gross_minor,
+        COALESCE(SUM(b.commission_minor) FILTER (WHERE b.status IN ('paid','refund_pending')), 0) AS commission_minor,
+        COALESCE(SUM(b.gateway_fee_minor) FILTER (WHERE b.status IN ('paid','refund_pending')), 0) AS fees_minor,
+        COALESCE(SUM(b.organizer_net_minor) FILTER (WHERE b.status IN ('paid','refund_pending')), 0) AS net_minor
+        FROM BookingOrders_007 b WHERE b.organizer_id = ?", [$organizerId]);
+} catch (Throwable $e) { $marketStats = null; }
+
+try {
     // Get organizer's events
     $myEvents = fetchAll("
         SELECT e.*, v.venue_name, v.city,
-               (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status != 'cancelled') as tickets_sold,
+               (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired')) as tickets_sold,
                (SELECT COALESCE(SUM(amount), 0) FROM Payments_007 
                 WHERE ticket_id IN (SELECT ticket_id FROM Tickets_007 WHERE event_id = e.event_id) 
                 AND payment_status = 'completed') as revenue
@@ -76,6 +85,8 @@ try {
                                 <i class="fas fa-ticket-alt me-2"></i>Bookings
                             </a>
                         </li>
+                        <li class="nav-item"><a class="nav-link" href="payment_account.php"><i class="fas fa-university me-2"></i>Settlement account</a></li>
+                        <li class="nav-item"><a class="nav-link" href="transactions.php"><i class="fas fa-receipt me-2"></i>Transactions</a></li>
                         <li class="nav-item">
                             <a class="nav-link" href="profile.php">
                                 <i class="fas fa-user me-2"></i>Profile
@@ -137,6 +148,10 @@ try {
                         </div>
                     </div>
                 </div>
+
+                <?php if ($marketStats): ?>
+                <section class="card border-0 shadow-sm mb-4"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Online payment overview</h2><a href="payment_account.php" class="btn btn-sm btn-outline-primary">Settlement account</a></div><div class="row g-3 mt-2"><div class="col-sm-6 col-lg"><small class="text-muted">Gross ticket sales</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['gross_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Platform commission</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['commission_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Gateway fees</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['fees_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Organizer allocation</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['net_minor']) / 100, 2); ?></div></div></div><p class="small text-muted mt-3 mb-0">Organizer allocation is calculated from verified payments. It does not confirm that a settlement has reached your bank.</p></div></section>
+                <?php endif; ?>
                 
                 <!-- My Events -->
                 <div class="card border-0 shadow-sm">

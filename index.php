@@ -12,7 +12,7 @@ $pageTitle = 'Home - Event Management System';
 // Get upcoming events
 try {
     $sql = "SELECT e.*, o.full_name as organizer_name, v.venue_name, v.city,
-                   (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status != 'cancelled')) as available_tickets
+                   (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired'))) as available_tickets
             FROM Events_007 e
             INNER JOIN Organizers_007 o ON e.organizer_id = o.organizer_id
             INNER JOIN Venues_007 v ON e.venue_id = v.venue_id
@@ -61,6 +61,8 @@ try {
                             <i class="fas fa-search me-1"></i>Browse Events
                         </a>
                     </li>
+                    <li class="nav-item"><a class="nav-link" href="#popular-categories">Categories</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how-it-works">How it works</a></li>
                 </ul>
                 
                 <ul class="navbar-nav">
@@ -72,7 +74,7 @@ try {
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="<?php echo getBaseUrl(); ?>attendee/profile.php">
+                                    <a class="dropdown-item" href="<?php echo getBaseUrl() . (getCurrentUserRole() === 'admin' ? 'admin/profile.php' : (getCurrentUserRole() === 'organizer' ? 'organizer/profile.php' : 'attendee/profile.php')); ?>">
                                         <i class="fas fa-id-card me-2"></i>My Profile
                                     </a>
                                 </li>
@@ -124,32 +126,29 @@ try {
                     <form class="hero-search" action="<?php echo getBaseUrl(); ?>browse_events.php" method="GET" role="search">
                         <label class="visually-hidden" for="homeEventSearch">Search events</label>
                         <i class="fas fa-search" aria-hidden="true"></i>
-                        <input id="homeEventSearch" class="form-control" type="search" name="search" placeholder="Try ‘live music’ or ‘Accra’">
+                        <input id="homeEventSearch" class="form-control" type="search" name="search" placeholder="Search by event, category or city">
                         <button class="btn btn-primary" type="submit">Find events</button>
                     </form>
                 </div>
                 <div class="col-lg-5">
-                    <div class="hero-visual" aria-hidden="true">
-                        <div class="event-poster">
-                            <div class="poster-top">
-                                <span>EVENTMS / GHANA</span>
-                                <span>GHANA</span>
-                            </div>
-                            <div class="poster-art"></div>
-                            <h2 class="poster-title">Make room<br>for going out.</h2>
-                            <div class="poster-bottom">
-                                <span>FIND YOUR NEXT EVENT</span>
-                                <span>01 — 03</span>
-                            </div>
+                    <div class="hero-visual" aria-label="A selection of event photography">
+                        <div class="hero-photo-board">
+                            <?php $heroEvent = $upcomingEvents[0] ?? null; $secondHeroEvent = $upcomingEvents[1] ?? null; ?>
+                            <a class="hero-photo hero-photo-main" href="<?php echo $heroEvent ? 'event_details.php?event_id=' . (int)$heroEvent['event_id'] : 'browse_events.php'; ?>" aria-label="<?php echo $heroEvent ? 'Explore ' . htmlspecialchars($heroEvent['event_name']) : 'Explore upcoming events'; ?>">
+                                <img src="<?php echo htmlspecialchars($heroEvent ? getEventImageUrl($heroEvent['event_id'], $heroEvent['cover_image_path'] ?? null, $heroEvent['event_category'] ?? null) : getEventImageUrl(4, null, 'Music')); ?>" alt="" fetchpriority="high">
+                                <span class="hero-image-caption"><?php echo $heroEvent ? htmlspecialchars($heroEvent['event_category'] ?? 'Upcoming event') : 'Find something worth going out for'; ?></span>
+                            </a>
+                            <a class="hero-photo hero-photo-small hero-photo-top" href="browse_events.php?category=<?php echo rawurlencode('Food & Drink'); ?>" aria-label="Explore food and drink events"><img src="<?php echo htmlspecialchars(getEventImageUrl(11, null, 'Food & Drink')); ?>" alt="" loading="lazy"></a>
+                            <a class="hero-photo hero-photo-small hero-photo-bottom" href="browse_events.php?category=<?php echo rawurlencode('Technology'); ?>" aria-label="Explore technology events"><img src="<?php echo htmlspecialchars($secondHeroEvent ? getEventImageUrl($secondHeroEvent['event_id'], $secondHeroEvent['cover_image_path'] ?? null, $secondHeroEvent['event_category'] ?? null) : getEventImageUrl(21, null, 'Technology')); ?>" alt="" loading="lazy"></a>
+                            <?php if ($heroEvent): ?><a class="hero-event-note" href="event_details.php?event_id=<?php echo (int)$heroEvent['event_id']; ?>"><span>Coming up</span><strong><?php echo htmlspecialchars($heroEvent['event_name']); ?></strong><small><?php echo htmlspecialchars($heroEvent['city']); ?></small></a><?php endif; ?>
                         </div>
-                        <p class="hero-caption">A good plan starts with knowing what’s on.</p>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <section class="how-it-works">
+    <section class="how-it-works" id="how-it-works">
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
@@ -183,6 +182,15 @@ try {
         </div>
     </section>
 
+    <section class="category-section" id="popular-categories">
+        <div class="container">
+            <div class="home-section-heading"><p class="section-eyebrow">Explore your interests</p><h2>Find your kind of thing</h2></div>
+            <div class="category-grid" aria-label="Browse event categories">
+                <?php foreach (getEventCategories() as $category): ?><a class="category-tile" href="<?php echo getBaseUrl(); ?>browse_events.php?category=<?php echo rawurlencode($category); ?>"><span class="category-icon" aria-hidden="true"><i class="fas <?php echo $category === 'Music' || $category === 'Nightlife' ? 'fa-music' : ($category === 'Technology' ? 'fa-laptop' : ($category === 'Food & Drink' ? 'fa-utensils' : ($category === 'Sports' ? 'fa-basketball' : ($category === 'Learning' ? 'fa-lightbulb' : ($category === 'Health & Wellness' ? 'fa-heart' : 'fa-sparkles'))))); ?>"></i></span><span><?php echo htmlspecialchars($category); ?></span><i class="fas fa-arrow-right category-arrow" aria-hidden="true"></i></a><?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
     <!-- Upcoming Events Section -->
     <section class="home-section">
         <div class="container">
@@ -209,7 +217,7 @@ try {
                         <div class="col-xl-4 col-md-6">
                             <div class="card h-100 border-0 shadow-sm event-card">
                                 <div class="event-card-media">
-                                    <img class="event-card-image" src="<?php echo getEventImageUrl($event['event_id']); ?>" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+                                    <img class="event-card-image" src="<?php echo htmlspecialchars(getEventImageUrl($event['event_id'], $event['cover_image_path'] ?? null, $event['event_category'] ?? null)); ?>" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
                                     <time class="event-date-chip" datetime="<?php echo htmlspecialchars(date('Y-m-d', strtotime($event['event_date']))); ?>">
                                         <span><?php echo htmlspecialchars(date('M', strtotime($event['event_date']))); ?></span>
                                         <strong><?php echo htmlspecialchars(date('d', strtotime($event['event_date']))); ?></strong>
@@ -221,7 +229,8 @@ try {
                                     </span>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title fw-bold"><?php echo htmlspecialchars($event['event_name']); ?></h5>
+                                    <h5 class="card-title fw-bold"><a href="<?php echo getBaseUrl(); ?>event_details.php?event_id=<?php echo (int)$event['event_id']; ?>"><?php echo htmlspecialchars($event['event_name']); ?></a></h5>
+                                    <span class="event-category-label"><?php echo htmlspecialchars($event['event_category'] ?? 'Other'); ?></span>
                                     <p class="text-muted small mb-2">
                                         <i class="fas fa-user me-1"></i>By <?php echo htmlspecialchars($event['organizer_name']); ?>
                                     </p>
@@ -242,12 +251,12 @@ try {
                                     </div>
                                         <?php if ($event['available_tickets'] > 0): ?>
                                         <?php if (isLoggedIn() && hasRole('attendee')): ?>
-                                            <a href="<?php echo getBaseUrl(); ?>attendee/book_ticket.php?event_id=<?php echo (int)$event['event_id']; ?>" class="btn btn-primary w-100 mt-2">
-                                                <i class="fas fa-ticket-alt me-1"></i>Book Now
+                                            <a href="<?php echo getBaseUrl(); ?>event_details.php?event_id=<?php echo (int)$event['event_id']; ?>" class="btn btn-primary w-100 mt-2">
+                                                <i class="fas fa-arrow-right me-1"></i>View event
                                             </a>
                                         <?php else: ?>
-                                            <a href="<?php echo getBaseUrl(); ?>login.php" class="btn btn-primary w-100 mt-2">
-                                                <i class="fas fa-ticket-alt me-1"></i>Sign in to book
+                                            <a href="<?php echo getBaseUrl(); ?>event_details.php?event_id=<?php echo (int)$event['event_id']; ?>" class="btn btn-primary w-100 mt-2">
+                                                <i class="fas fa-arrow-right me-1"></i>View event
                                             </a>
                                         <?php endif; ?>
                                     <?php else: ?>

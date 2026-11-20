@@ -30,7 +30,7 @@ try {
     // Get upcoming events
     $upcomingEvents = fetchAll("
         SELECT e.*, o.full_name as organizer_name, v.venue_name, v.city,
-               (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status != 'cancelled')) as available_tickets
+               (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired'))) as available_tickets
         FROM Events_007 e
         INNER JOIN Organizers_007 o ON e.organizer_id = o.organizer_id
         INNER JOIN Venues_007 v ON e.venue_id = v.venue_id
@@ -45,7 +45,7 @@ try {
         'upcoming' => fetchOne("
             SELECT COUNT(*) as count FROM Tickets_007 t
             INNER JOIN Events_007 e ON t.event_id = e.event_id
-            WHERE t.attendee_id = ? AND e.event_date > CURRENT_TIMESTAMP AND t.ticket_status != 'cancelled'
+            WHERE t.attendee_id = ? AND e.event_date > CURRENT_TIMESTAMP AND t.ticket_status NOT IN ('cancelled', 'expired')
         ", [$attendeeId])['count'] ?? 0,
         'completed' => fetchOne("
             SELECT COUNT(*) as count FROM Tickets_007 t
@@ -210,19 +210,13 @@ try {
                                     <p class="text-muted text-center py-4">No upcoming events.</p>
                                 <?php else: ?>
                                     <?php foreach ($upcomingEvents as $event): ?>
-                                        <div class="mb-3 pb-3 border-bottom">
-                                            <h6><?php echo htmlspecialchars($event['event_name']); ?></h6>
-                                            <p class="small text-muted mb-1">
-                                                <i class="fas fa-calendar me-1"></i><?php echo formatDate($event['event_date']); ?>
-                                            </p>
-                                            <p class="small text-muted mb-1">
-                                                <i class="fas fa-map-marker-alt me-1"></i><?php echo htmlspecialchars($event['city']); ?>
-                                            </p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold text-primary"><?php echo formatCurrency($event['ticket_price']); ?></span>
-                                                <span class="badge bg-<?php echo $event['available_tickets'] > 0 ? 'success' : 'danger'; ?>">
-                                                    <?php echo $event['available_tickets'] > 0 ? $event['available_tickets'] . ' left' : 'Sold Out'; ?>
-                                                </span>
+                                        <div class="dashboard-discovery-event">
+                                            <a href="../event_details.php?event_id=<?php echo (int)$event['event_id']; ?>" class="dashboard-discovery-image" aria-label="View <?php echo htmlspecialchars($event['event_name']); ?>"><img src="<?php echo htmlspecialchars(getEventImageUrl($event['event_id'], $event['cover_image_path'] ?? null, $event['event_category'] ?? null)); ?>" alt="" loading="lazy"></a>
+                                            <div class="dashboard-discovery-copy">
+                                                <span class="event-category-label"><?php echo htmlspecialchars($event['event_category'] ?? 'Other'); ?></span>
+                                                <h6><a href="../event_details.php?event_id=<?php echo (int)$event['event_id']; ?>"><?php echo htmlspecialchars($event['event_name']); ?></a></h6>
+                                                <p class="small text-muted mb-2"><i class="fas fa-calendar me-1" aria-hidden="true"></i><?php echo formatDate($event['event_date']); ?> <i class="fas fa-location-dot ms-2 me-1" aria-hidden="true"></i><?php echo htmlspecialchars($event['city']); ?></p>
+                                                <div class="d-flex justify-content-between align-items-center"><span class="fw-bold text-primary"><?php echo formatCurrency($event['ticket_price']); ?></span><span class="badge bg-<?php echo $event['available_tickets'] > 0 ? 'success' : 'danger'; ?>"><?php echo $event['available_tickets'] > 0 ? $event['available_tickets'] . ' left' : 'Sold Out'; ?></span></div>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>

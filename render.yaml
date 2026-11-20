@@ -24,3 +24,13 @@ services:
         value: "0"
       - key: APP_TRUST_PROXY
         value: "1"
+      - key: PAYSTACK_MODE
+        value: test
+      - key: PAYSTACK_TEST_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_TEST_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false

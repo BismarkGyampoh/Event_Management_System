@@ -15,7 +15,7 @@ $organizerId = getCurrentUserId();
 try {
     $events = fetchAll("
         SELECT e.*, v.venue_name, v.city, v.address,
-               (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status != 'cancelled') as tickets_sold,
+               (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired')) as tickets_sold,
                (SELECT COALESCE(SUM(amount), 0) FROM Payments_007 
                 WHERE ticket_id IN (SELECT ticket_id FROM Tickets_007 WHERE event_id = e.event_id) 
                 AND payment_status = 'completed') as revenue
@@ -159,6 +159,7 @@ try {
                                                            class="btn btn-outline-info" title="View Bookings">
                                                             <i class="fas fa-ticket-alt"></i>
                                                         </a>
+                                                        <a href="ticket_types.php?event_id=<?php echo (int)$event['event_id']; ?>" class="btn btn-outline-success" title="Ticket types"><i class="fas fa-tags"></i></a>
                                                     </div>
                                                 </td>
                                             </tr>

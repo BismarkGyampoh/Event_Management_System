@@ -8,12 +8,12 @@ Supabase provides the PostgreSQL database. Vercel is not part of this deployment
 1. Create a Supabase project and save its database password.
 2. For a new empty database, run `database_setup_postgresql.sql` from this
    repository once to create the tables, functions, and triggers.
-3. If the database was already initialized, run only the section marked
-   **Production core migration** in `database_setup_postgresql.sql` before
-   deploying the matching application code. It changes bookings to remain
-   unpaid until an organizer confirms in-person cash, and adds a pending refund
-   state, creates the login throttling table and integrity constraints, and
-   removes credential fields from old audit records. Do not rerun the full
+3. If the database was already initialized, run the sections marked
+   **Production core migration** and **Feature expansion migration**, in that
+   order, before deploying the matching application code. They add unpaid cash
+   reservations, login throttling, the ticketing and marketplace-payment schema,
+   favorites/waitlists/account tokens, and relevant integrity constraints.
+   Review the statements and take a database backup first. Do not rerun the full
    setup script on a database with data.
 4. In the project dashboard, open **Connect** and choose **Session pooler**.
    Use the displayed host and username; do not construct them yourself.
@@ -42,7 +42,23 @@ does not copy existing application data.
      credentials
    - `APP_TRUST_PROXY`: keep enabled for Render's HTTPS proxy so secure session
      cookies and generated links use HTTPS
+   - `PAYSTACK_MODE`: set to `test` only; this code deliberately rejects live mode
+   - `PAYSTACK_TEST_SECRET_KEY`: Paystack test secret, stored as a secret
+   - `PAYSTACK_TEST_WEBHOOK_SECRET`: Paystack test webhook signing secret (`whsec_`), stored as a secret
+   - `RESEND_API_KEY`: Resend API key, stored as a secret
+   - `RESEND_FROM_EMAIL`: verified sender address configured in Resend
+   - `APP_BASE_PATH`: optional app subpath used for generated checkout callbacks
 4. Deploy and check the Render logs if the database connection fails.
+
+## 3. Payment notifications
+
+Payment confirmation messages are queued in `NotificationOutbox_007` after a
+verified booking. Configure a scheduled task to run
+`php scripts/process_notification_outbox.php` every five minutes using the same
+database and Resend environment variables. The worker uses row locks and a
+stable Resend idempotency key so overlapping runs and retries do not issue
+duplicate messages. Keep the worker in test mode until the payment account and
+marketplace settlement model have been approved.
 
 Never commit database or admin credentials. The included `.gitignore` and
 `.dockerignore` exclude local environment files and backup exports; confirm
@@ -56,15 +72,20 @@ those files are not tracked or uploaded separately.
   (or use persistent/object storage) and keep independent Supabase backups.
 - PHP sessions use local files by default. A service restart can sign users out;
   use shared session storage before running multiple service instances.
-- New bookings use unpaid pay-in-person reservations; organizers must confirm
-  receipt before a ticket is valid. Online payment collection, payment gateway
-  webhooks, and automated refunds are not implemented; do not advertise online
-  checkout. Review existing booking/payment rows before deployment: this
-  migration does not reconcile old records that may have been marked paid
-  without a real charge.
-- Attendee registration is available, but email verification and password
-  recovery are deferred until an email provider is configured. For public
-  production, configure these before relying on email identity.
+- Cash reservations remain available. Paystack checkout and webhooks are
+  restricted to test mode. Configure a Paystack test account and webhook URL
+  `https://<host>/<base-path>/webhooks/paystack.php`; the current timestamped
+  signature uses the test webhook signing secret, while the legacy signature
+  uses the test API key. Do not set live credentials or accept real money.
+- Platform checkout also requires an administrator-set commission and an
+  organizer subaccount that Paystack has verified and an administrator has
+  reviewed. Subaccount availability, KYC, fee allocation and settlement
+  reversal must be confirmed for the merchant account before any production
+  rollout. Admin refund requests remain subject to provider and settlement
+  reconciliation.
+- Set `RESEND_API_KEY` and `RESEND_FROM_EMAIL` for confirmation email delivery.
+  Other account verification and recovery mail workflows still require wiring
+  and should not be advertised as complete.
 - Remove any demo accounts or weak passwords from the Supabase database before
   making the application public.
 - Rotate credentials for any accounts that used passwords previously recorded

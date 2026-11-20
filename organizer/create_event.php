@@ -29,18 +29,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $eventName = sanitize($_POST['event_name'] ?? '');
         $eventDescription = sanitize($_POST['event_description'] ?? '');
+        $eventCategory = $_POST['event_category'] ?? 'Other';
         $venueId = (int)($_POST['venue_id'] ?? 0);
         $eventDateRaw = $_POST['event_date'] ?? '';
         $endDateRaw = $_POST['end_date'] ?? '';
-        $ticketPrice = filter_var($_POST['ticket_price'] ?? null, FILTER_VALIDATE_FLOAT);
+        $ticketPriceRaw = trim((string)($_POST['ticket_price'] ?? ''));
+        $ticketPrice = filter_var($ticketPriceRaw, FILTER_VALIDATE_FLOAT);
         $maxCapacity = filter_var($_POST['max_capacity'] ?? null, FILTER_VALIDATE_INT);
         $eventStatus = $_POST['event_status'] ?? 'draft';
         $eventDate = parseEventDateTime($eventDateRaw);
         $endDate = $endDateRaw === '' ? null : parseEventDateTime($endDateRaw);
         $venue = $venueId > 0 ? fetchOne('SELECT capacity FROM Venues_007 WHERE venue_id = :venue_id', [':venue_id' => $venueId]) : null;
 
-        if ($eventName === '' || $eventDate === null || ($endDateRaw !== '' && $endDate === null)
+        if ($eventName === '' || !in_array($eventCategory, getEventCategories(), true)
+            || $eventDate === null || ($endDateRaw !== '' && $endDate === null)
             || ($endDate !== null && $endDate < $eventDate) || !$venue
+            || !preg_match('/\A(?:0|[1-9][0-9]{0,7})(?:\.[0-9]{1,2})?\z/', $ticketPriceRaw)
             || $ticketPrice === false || $ticketPrice < 0
             || $maxCapacity === false || $maxCapacity < 1 || $maxCapacity > (int)$venue['capacity']
             || !in_array($eventStatus, ['draft', 'published'], true)
@@ -49,11 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $messageType = 'danger';
         } else {
             $pdo = getDbConnection();
+            $coverImagePath = null;
             try {
                 $pdo->beginTransaction();
+                $coverImagePath = saveEventCoverUpload($_FILES['cover_image'] ?? null);
                 $sql = "INSERT INTO Events_007 
-                        (organizer_id, venue_id, event_name, event_description, event_date, end_date, ticket_price, max_capacity, event_status) 
-                        VALUES (:organizer_id, :venue_id, :event_name, :event_description, :event_date, :end_date, :ticket_price, :max_capacity, :event_status)
+                        (organizer_id, venue_id, event_name, event_description, event_category, cover_image_path, event_date, end_date, ticket_price, max_capacity, event_status) 
+                        VALUES (:organizer_id, :venue_id, :event_name, :event_description, :event_category, :cover_image_path, :event_date, :end_date, :ticket_price, :max_capacity, :event_status)
                         RETURNING event_id";
                 $stmt = getDbConnection()->prepare($sql);
                 $stmt->execute([
@@ -61,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':venue_id' => $venueId,
                     ':event_name' => $eventName,
                     ':event_description' => $eventDescription,
+                    ':event_category' => $eventCategory,
+                    ':cover_image_path' => $coverImagePath,
                     ':event_date' => $eventDate,
                     ':end_date' => $endDate,
                     ':ticket_price' => $ticketPrice,
@@ -69,8 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 
                 $newEventId = $stmt->fetchColumn();
+                $ticketType = $pdo->prepare("INSERT INTO TicketTypes_007 (event_id, type_name, price_minor, quantity) VALUES (?, 'General Admission', ROUND(CAST(? AS NUMERIC) * 100)::BIGINT, ?)");
+                $ticketType->execute([$newEventId, (string)($_POST['ticket_price'] ?? ''), $maxCapacity]);
                 logAuditAction($organizerId, 'organizer', 'INSERT', 'Events_007', $newEventId, [], [
-                    'event_name' => $eventName, 'venue_id' => $venueId, 'event_date' => $eventDate,
+                    'event_name' => $eventName, 'event_category' => $eventCategory,
+                    'venue_id' => $venueId, 'event_date' => $eventDate,
                     'end_date' => $endDate, 'ticket_price' => $ticketPrice,
                     'max_capacity' => $maxCapacity, 'event_status' => $eventStatus
                 ]);
@@ -164,25 +175,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <h5 class="mb-0">Event Details</h5>
                             </div>
                             <div class="card-body">
-                                <form method="POST">
+                                <form method="POST" enctype="multipart/form-data">
                                     <?php echo csrfTokenField(); ?>
+
+                                    <div class="form-section-heading"><span>01</span><div><strong>Event basics</strong><small>Give people a clear first impression.</small></div></div>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label">Event Name *</label>
-                                        <input type="text" class="form-control" name="event_name" required 
+                                        <label class="form-label" for="event-name">Event name *</label>
+                                        <input id="event-name" type="text" class="form-control" name="event_name" required 
                                                placeholder="Enter event name" value="<?php echo htmlspecialchars($_POST['event_name'] ?? ''); ?>">
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label">Description</label>
-                                        <textarea class="form-control" name="event_description" rows="4" 
+                                        <label class="form-label" for="event-description">Description</label>
+                                        <textarea id="event-description" class="form-control" name="event_description" rows="4" 
                                                   placeholder="Describe your event"><?php echo htmlspecialchars($_POST['event_description'] ?? ''); ?></textarea>
                                     </div>
-                                    
+
+                                    <div class="form-section-heading"><span>02</span><div><strong>Look and category</strong><small>Help the right audience find your event.</small></div></div>
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
-                                            <label class="form-label">Venue *</label>
-                                            <select class="form-select" name="venue_id" required>
+                                            <label class="form-label" for="eventCategory">Category *</label>
+                                            <select class="form-select" id="eventCategory" name="event_category" required>
+                                                <?php foreach (getEventCategories() as $category): ?>
+                                                    <option value="<?php echo htmlspecialchars($category); ?>" <?php echo (($_POST['event_category'] ?? 'Other') === $category) ? 'selected' : ''; ?>><?php echo htmlspecialchars($category); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="eventCover">Cover photo</label>
+                                            <input class="form-control" type="file" id="eventCover" name="cover_image" accept="image/jpeg,image/png,image/webp">
+                                            <small class="text-muted">JPEG, PNG, or WebP, up to 5 MB.</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-section-heading"><span>03</span><div><strong>When and where</strong><small>Set the venue and event schedule.</small></div></div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="event-venue">Venue *</label>
+                                            <select id="event-venue" class="form-select" name="venue_id" required>
                                                 <option value="">Select a venue</option>
                                                 <?php foreach ($venues as $venue): ?>
                                                     <option value="<?php echo $venue['venue_id']; ?>" 
@@ -195,8 +226,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                         
                                         <div class="col-md-6">
-                                            <label class="form-label">Event Status</label>
-                                            <select class="form-select" name="event_status">
+                                            <label class="form-label" for="event-status">Publication status</label>
+                                            <select id="event-status" class="form-select" name="event_status">
                                                 <option value="draft" <?php echo (($_POST['event_status'] ?? 'draft') === 'draft') ? 'selected' : ''; ?>>Draft</option>
                                                 <option value="published" <?php echo (($_POST['event_status'] ?? '') === 'published') ? 'selected' : ''; ?>>Published</option>
                                             </select>
@@ -206,29 +237,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
-                                            <label class="form-label">Start Date & Time *</label>
-                                            <input type="datetime-local" class="form-control" name="event_date" required 
+                                            <label class="form-label" for="event-start">Start date and time *</label>
+                                            <input id="event-start" type="datetime-local" class="form-control" name="event_date" required 
                                                    value="<?php echo htmlspecialchars($_POST['event_date'] ?? ''); ?>">
                                         </div>
                                         
                                         <div class="col-md-6">
-                                            <label class="form-label">End Date & Time</label>
-                                            <input type="datetime-local" class="form-control" name="end_date" 
+                                            <label class="form-label" for="event-end">End date and time</label>
+                                            <input id="event-end" type="datetime-local" class="form-control" name="end_date" 
                                                    value="<?php echo htmlspecialchars($_POST['end_date'] ?? ''); ?>">
                                         </div>
                                     </div>
                                     
+                                    <div class="form-section-heading"><span>04</span><div><strong>Tickets and capacity</strong><small>You can add more ticket categories after creating the event.</small></div></div>
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
-                                            <label class="form-label">Ticket Price (GHS) *</label>
-                                            <input type="number" class="form-control" name="ticket_price" required 
+                                            <label class="form-label" for="ticket-price">Starting ticket price (GHS) *</label>
+                                            <input id="ticket-price" type="number" class="form-control" name="ticket_price" required 
                                                    min="0" step="0.01" placeholder="0.00" 
                                                    value="<?php echo htmlspecialchars($_POST['ticket_price'] ?? ''); ?>">
                                         </div>
                                         
                                         <div class="col-md-6">
-                                            <label class="form-label">Max Capacity *</label>
-                                            <input type="number" class="form-control" name="max_capacity" required 
+                                            <label class="form-label" for="max-capacity">Event capacity *</label>
+                                            <input id="max-capacity" type="number" class="form-control" name="max_capacity" required 
                                                    min="1" placeholder="100" 
                                                    value="<?php echo htmlspecialchars($_POST['max_capacity'] ?? ''); ?>">
                                         </div>

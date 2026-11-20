@@ -22,7 +22,7 @@ if ($eventId <= 0) {
 // Get event details
 $event = fetchOne("
     SELECT e.*, v.venue_name, v.city, v.address, v.amenities,
-           (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status != 'cancelled')) as available_tickets
+           (e.max_capacity - (SELECT COUNT(*) FROM Tickets_007 WHERE event_id = e.event_id AND ticket_status NOT IN ('cancelled', 'expired'))) as available_tickets
     FROM Events_007 e
     INNER JOIN Venues_007 v ON e.venue_id = v.venue_id
     WHERE e.event_id = ? AND e.event_status = 'published'
@@ -31,6 +31,20 @@ $event = fetchOne("
 if (!$event) {
     setFlashMessage('danger', 'Event not found or not available.');
     redirect('browse_events.php');
+}
+
+$marketplaceTypes = [];
+$marketplaceEnabled = false;
+try {
+    $marketplaceTypes = fetchAll("SELECT ticket_type_id, type_name, description, price_minor, quantity FROM TicketTypes_007 t
+        WHERE event_id = ? AND is_active = TRUE AND price_minor > 0 AND (sales_start IS NULL OR sales_start <= CURRENT_TIMESTAMP)
+        AND (sales_end IS NULL OR sales_end > CURRENT_TIMESTAMP) ORDER BY price_minor, ticket_type_id", [$eventId]);
+    $paymentState = fetchOne("SELECT s.payments_enabled, s.commission_bps, a.verification_status FROM PlatformPaymentSettings_007 s
+        LEFT JOIN OrganizerPaymentAccounts_007 a ON a.organizer_id = ? WHERE s.settings_id = 1", [$event['organizer_id']]);
+    $marketplaceEnabled = isDatabaseBooleanTrue($paymentState['payments_enabled'] ?? false) && $paymentState['commission_bps'] !== null
+        && ($paymentState['verification_status'] ?? '') === 'verified' && getenv('PAYSTACK_MODE') === 'test';
+} catch (Throwable $e) {
+    // The legacy cash reservation remains available if marketplace migrations are not yet installed.
 }
 
 $message = '';
@@ -189,6 +203,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <a href="browse_events.php" class="btn btn-outline-secondary btn-lg">Cancel</a>
                                     </div>
                                 </form>
+                                <?php if ($marketplaceEnabled && $marketplaceTypes): ?>
+                                <hr class="my-4"><h6 class="fw-bold">Pay online (test mode)</h6>
+                                <form method="post" action="checkout.php" class="row g-3 align-items-end">
+                                    <?php echo csrfTokenField(); ?><input type="hidden" name="event_id" value="<?php echo (int)$eventId; ?>">
+                                    <div class="col-md-7"><label for="ticket_type_id" class="form-label">Ticket type</label><select class="form-select" required name="ticket_type_id" id="ticket_type_id"><?php foreach ($marketplaceTypes as $ticketType): ?><option value="<?php echo (int)$ticketType['ticket_type_id']; ?>"><?php echo htmlspecialchars($ticketType['type_name']); ?> — <?php echo formatCurrency(((int)$ticketType['price_minor']) / 100); ?></option><?php endforeach; ?></select></div>
+                                    <div class="col-md-3"><label for="quantity" class="form-label">Quantity</label><input class="form-control" type="number" id="quantity" name="quantity" min="1" max="10" value="1" required></div>
+                                    <div class="col-md-2"><button class="btn btn-primary w-100">Pay securely</button></div>
+                                    <div class="col-12"><small class="text-muted">Checkout is in test mode. The server verifies payment before tickets are issued.</small></div>
+                                </form><?php endif; ?>
                             </div>
                         </div>
                     </div>

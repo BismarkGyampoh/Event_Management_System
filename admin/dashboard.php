@@ -87,6 +87,9 @@ try {
                                 <i class="fas fa-users-cog me-2"></i>Manage Users
                             </a>
                         </li>
+                        <li class="nav-item"><a class="nav-link" href="payment_settings.php"><i class="fas fa-money-check-alt me-2"></i>Payments</a></li>
+                        <li class="nav-item"><a class="nav-link" href="payments.php"><i class="fas fa-receipt me-2"></i>Transactions</a></li>
+                        <li class="nav-item"><a class="nav-link" href="refunds.php"><i class="fas fa-undo me-2"></i>Refunds</a></li>
                         <li class="nav-item">
                             <a class="nav-link" href="audit_logs.php">
                                 <i class="fas fa-history me-2"></i>Audit Logs

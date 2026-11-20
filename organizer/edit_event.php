@@ -51,20 +51,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $eventName = sanitize($_POST['event_name'] ?? '');
         $eventDescription = sanitize($_POST['event_description'] ?? '');
+        $eventCategory = $_POST['event_category'] ?? 'Other';
         $venueId = (int)($_POST['venue_id'] ?? 0);
         $eventDateRaw = $_POST['event_date'] ?? '';
         $endDateRaw = $_POST['end_date'] ?? '';
-        $ticketPrice = filter_var($_POST['ticket_price'] ?? null, FILTER_VALIDATE_FLOAT);
+        $ticketPriceRaw = trim((string)($_POST['ticket_price'] ?? ''));
+        $ticketPrice = filter_var($ticketPriceRaw, FILTER_VALIDATE_FLOAT);
         $maxCapacity = filter_var($_POST['max_capacity'] ?? null, FILTER_VALIDATE_INT);
         $eventStatus = $_POST['event_status'] ?? 'draft';
         $eventDate = parseEventDateTime($eventDateRaw);
         $endDate = $endDateRaw === '' ? null : parseEventDateTime($endDateRaw);
         $venue = $venueId > 0 ? fetchOne('SELECT capacity FROM Venues_007 WHERE venue_id = :venue_id', [':venue_id' => $venueId]) : null;
-        $ticketsSold = fetchOne("SELECT COUNT(*) AS count FROM Tickets_007 WHERE event_id = :event_id AND ticket_status <> 'cancelled'", [':event_id' => $eventId]);
+        $ticketsSold = fetchOne("SELECT COUNT(*) AS count FROM Tickets_007 WHERE event_id = :event_id AND ticket_status NOT IN ('cancelled', 'expired')", [':event_id' => $eventId]);
         $currentStatusAllowsPast = in_array($eventStatus, ['completed', 'cancelled'], true);
 
-        if ($eventName === '' || $eventDate === null || ($endDateRaw !== '' && $endDate === null)
+        if ($eventName === '' || !in_array($eventCategory, getEventCategories(), true)
+            || $eventDate === null || ($endDateRaw !== '' && $endDate === null)
             || ($endDate !== null && $endDate < $eventDate) || !$venue
+            || !preg_match('/\A(?:0|[1-9][0-9]{0,7})(?:\.[0-9]{1,2})?\z/', $ticketPriceRaw)
             || $ticketPrice === false || $ticketPrice < 0
             || $maxCapacity === false || $maxCapacity < 1 || $maxCapacity > (int)$venue['capacity']
             || $maxCapacity < (int)($ticketsSold['count'] ?? 0)
@@ -73,16 +77,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Enter valid event details. Capacity must fit the venue and existing bookings; active events need a future start time.';
             $messageType = 'danger';
         } else {
+            $newCoverImagePath = null;
             try {
                 $pdo = getDbConnection();
                 $pdo->beginTransaction();
+                $newCoverImagePath = saveEventCoverUpload($_FILES['cover_image'] ?? null);
                 $oldData = fetchOne('SELECT * FROM Events_007 WHERE event_id = :event_id AND organizer_id = :organizer_id FOR UPDATE', [
                     ':event_id' => $eventId, ':organizer_id' => $organizerId
                 ]);
                 if (!$oldData) {
                     throw new RuntimeException('Event not found or no longer belongs to your account.');
                 }
-                $lockedBookingCount = fetchOne("SELECT COUNT(*) AS count FROM Tickets_007 WHERE event_id = :event_id AND ticket_status <> 'cancelled'", [':event_id' => $eventId]);
+                $lockedBookingCount = fetchOne("SELECT COUNT(*) AS count FROM Tickets_007 WHERE event_id = :event_id AND ticket_status NOT IN ('cancelled', 'expired')", [':event_id' => $eventId]);
                 if ($maxCapacity < (int)($lockedBookingCount['count'] ?? 0)) {
                     throw new RuntimeException('Capacity cannot be lower than the number of active bookings.');
                 }
@@ -95,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $sql = "UPDATE Events_007 SET 
                         venue_id = :venue_id, event_name = :event_name, event_description = :event_description, 
+                        event_category = :event_category, cover_image_path = COALESCE(:cover_image_path, cover_image_path),
                         event_date = :event_date, end_date = :end_date, ticket_price = :ticket_price, 
                         max_capacity = :max_capacity, event_status = :event_status
                         WHERE event_id = :event_id AND organizer_id = :organizer_id";
@@ -103,6 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ':venue_id' => $venueId,
                     ':event_name' => $eventName,
                     ':event_description' => $eventDescription,
+                    ':event_category' => $eventCategory,
+                    ':cover_image_path' => $newCoverImagePath,
                     ':event_date' => $eventDate,
                     ':end_date' => $endDate,
                     ':ticket_price' => $ticketPrice,
@@ -113,18 +122,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 
                 if ($eventStatus === 'cancelled' && $oldData['event_status'] !== 'cancelled') {
+                    $pdo->prepare("INSERT INTO PaymentRefunds_007 (marketplace_payment_id, requested_by, amount_minor, reason)
+                        SELECT p.marketplace_payment_id, b.organizer_id, b.gross_minor, 'Event cancelled by organizer; administrator refund review required'
+                        FROM BookingOrders_007 b JOIN MarketplacePayments_007 p ON p.booking_id = b.booking_id
+                        WHERE b.event_id = ? AND b.status = 'paid' AND p.status = 'success'
+                        ON CONFLICT (marketplace_payment_id) WHERE status IN ('requested','processing','needs_attention') DO NOTHING")
+                        ->execute([$eventId]);
+                    $pdo->prepare("UPDATE BookingOrders_007 b SET status = 'refund_pending', updated_at = CURRENT_TIMESTAMP
+                        WHERE b.event_id = ? AND b.status = 'paid' AND EXISTS (SELECT 1 FROM MarketplacePayments_007 p WHERE p.booking_id = b.booking_id AND p.status = 'success')")
+                        ->execute([$eventId]);
+                    $pdo->prepare("UPDATE BookingOrders_007 SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE event_id = ? AND status = 'pending'")
+                        ->execute([$eventId]);
+                    $pdo->prepare("UPDATE MarketplacePayments_007 p SET status = 'cancelled' FROM BookingOrders_007 b WHERE b.booking_id = p.booking_id AND b.event_id = ? AND p.status IN ('initializing','pending')")
+                        ->execute([$eventId]);
                     $pdo->prepare("UPDATE Tickets_007 SET ticket_status = 'cancelled' WHERE event_id = :event_id AND ticket_status IN ('booked', 'confirmed')")
                         ->execute([':event_id' => $eventId]);
                     $pdo->prepare("UPDATE Payments_007 SET payment_status = CASE WHEN payment_status = 'completed' THEN 'refund_pending' ELSE 'failed' END WHERE ticket_id IN (SELECT ticket_id FROM Tickets_007 WHERE event_id = :event_id) AND payment_status IN ('pending', 'completed')")
                         ->execute([':event_id' => $eventId]);
+                    $pdo->prepare("UPDATE EventWaitlist_007 SET status = 'expired' WHERE event_id = :event_id AND status IN ('waiting', 'invited')")
+                        ->execute([':event_id' => $eventId]);
                 }
 
                 logAuditAction($organizerId, 'organizer', 'UPDATE', 'Events_007', $eventId, $oldData, [
-                    'venue_id' => $venueId, 'event_name' => $eventName, 'event_date' => $eventDate,
+                    'venue_id' => $venueId, 'event_name' => $eventName, 'event_category' => $eventCategory,
+                    'cover_image_updated' => $newCoverImagePath !== null, 'event_date' => $eventDate,
                     'end_date' => $endDate, 'ticket_price' => $ticketPrice,
                     'max_capacity' => $maxCapacity, 'event_status' => $eventStatus
                 ]);
                 $pdo->commit();
+                $newCoverImagePath = null;
                 
                 // Refresh event data
                 $event = fetchOne("SELECT * FROM Events_007 WHERE event_id = :event_id", [':event_id' => $eventId]);
@@ -134,6 +160,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {
                 if (isset($pdo) && $pdo->inTransaction()) {
                     $pdo->rollBack();
+                }
+                if ($newCoverImagePath !== null) {
+                    $newImageFile = __DIR__ . '/../assets/' . str_replace('/', DIRECTORY_SEPARATOR, $newCoverImagePath);
+                    if (is_file($newImageFile)) unlink($newImageFile);
                 }
                 error_log('Organizer event update failed: ' . $e->getMessage());
                 $message = 'We could not update this event. Please review the details and try again.';
@@ -217,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </span>
                             </div>
                             <div class="card-body">
-                                <form method="POST">
+                                <form method="POST" enctype="multipart/form-data">
                                     <?php echo csrfTokenField(); ?>
                                     
                                     <div class="mb-3">
@@ -229,6 +259,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="mb-3">
                                         <label class="form-label">Description</label>
                                         <textarea class="form-control" name="event_description" rows="4"><?php echo htmlspecialchars($event['event_description'] ?? ''); ?></textarea>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="eventCategory">Category *</label>
+                                            <select class="form-select" id="eventCategory" name="event_category" required>
+                                                <?php foreach (getEventCategories() as $category): ?>
+                                                    <option value="<?php echo htmlspecialchars($category); ?>" <?php echo ($event['event_category'] ?? 'Other') === $category ? 'selected' : ''; ?>><?php echo htmlspecialchars($category); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="eventCover">Change cover photo</label>
+                                            <input class="form-control" type="file" id="eventCover" name="cover_image" accept="image/jpeg,image/png,image/webp">
+                                            <small class="text-muted">JPEG, PNG, or WebP, up to 5 MB.</small>
+                                        </div>
                                     </div>
                                     
                                     <div class="row g-3 mb-3">
@@ -304,7 +350,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <div class="card-body">
                                 <?php
-                                $ticketsSold = fetchOne("SELECT COUNT(*) as count FROM Tickets_007 WHERE event_id = :event_id AND ticket_status != 'cancelled'", [':event_id' => $eventId])['count'] ?? 0;
+                                $ticketsSold = fetchOne("SELECT COUNT(*) as count FROM Tickets_007 WHERE event_id = :event_id AND ticket_status NOT IN ('cancelled', 'expired')", [':event_id' => $eventId])['count'] ?? 0;
                                 $revenue = fetchOne("
                                     SELECT COALESCE(SUM(amount), 0) as total 
                                     FROM Payments_007 

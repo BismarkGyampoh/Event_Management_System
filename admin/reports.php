@@ -17,7 +17,7 @@ try {
     $revenueByEvent = fetchAll("
         SELECT e.event_name, o.full_name as organizer_name, 
                COUNT(t.ticket_id) as tickets_sold,
-               COALESCE(SUM(CASE WHEN t.ticket_status != 'cancelled' AND p.payment_status = 'completed' THEN p.amount ELSE 0 END), 0) as revenue
+               COALESCE(SUM(CASE WHEN t.ticket_status NOT IN ('cancelled', 'expired') AND p.payment_status = 'completed' THEN p.amount ELSE 0 END), 0) as revenue
         FROM Events_007 e
         INNER JOIN Organizers_007 o ON e.organizer_id = o.organizer_id
         LEFT JOIN Tickets_007 t ON e.event_id = t.event_id
@@ -49,7 +49,7 @@ try {
     $topOrganizers = fetchAll("
         SELECT o.full_name, o.company_name,
                COUNT(DISTINCT e.event_id) as events_created,
-               COALESCE(SUM(CASE WHEN t.ticket_status != 'cancelled' AND p.payment_status = 'completed' THEN p.amount ELSE 0 END), 0) as total_revenue
+               COALESCE(SUM(CASE WHEN t.ticket_status NOT IN ('cancelled', 'expired') AND p.payment_status = 'completed' THEN p.amount ELSE 0 END), 0) as total_revenue
         FROM Organizers_007 o
         LEFT JOIN Events_007 e ON o.organizer_id = e.organizer_id
         LEFT JOIN Tickets_007 t ON e.event_id = t.event_id
@@ -61,7 +61,7 @@ try {
     
     // Calculate totals
     $totalRevenue = fetchOne("SELECT COALESCE(SUM(amount), 0) as total FROM Payments_007 WHERE payment_status = 'completed'")['total'] ?? 0;
-    $totalTickets = fetchOne("SELECT COUNT(*) as count FROM Tickets_007 WHERE ticket_status != 'cancelled'")['count'] ?? 0;
+    $totalTickets = fetchOne("SELECT COUNT(*) as count FROM Tickets_007 WHERE ticket_status NOT IN ('cancelled', 'expired')")['count'] ?? 0;
     $totalEvents = fetchOne("SELECT COUNT(*) as count FROM Events_007")['count'] ?? 0;
 } catch (Exception $e) {
     $revenueByEvent = [];
