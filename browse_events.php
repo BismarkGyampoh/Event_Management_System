@@ -86,16 +86,15 @@ $totalPages = ceil($totalEvents / $perPage);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
+    <meta name="description" content="Browse upcoming events by date, place and category on EventMS.">
+    <title><?php echo htmlspecialchars($pageTitle); ?></title>
+    <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
 </head>
 <body>
     <?php include __DIR__ . '/includes/header.php'; ?>
 
     <!-- Main Content -->
-    <main class="py-5 browse-page">
+    <main id="main-content" class="py-5 browse-page">
         <div class="container">
             <div class="discovery-intro mb-4">
                 <p class="section-eyebrow mb-2">Find your next experience</p>
@@ -167,11 +166,11 @@ $totalPages = ceil($totalEvents / $perPage);
                         </div>
                     </div>
                 <?php else: ?>
-                    <?php foreach ($events as $event): ?>
+                    <?php $usedBrowseImages = []; foreach ($events as $event): $eventCardImage = getUniqueEventImageUrl($event['event_id'], $event['cover_image_path'] ?? null, $usedBrowseImages); ?>
                         <div class="col-xl-4 col-md-6">
-                            <div class="card h-100 border-0 shadow-sm event-card">
+                            <a href="<?php echo getBaseUrl(); ?>event_details.php?event_id=<?php echo (int)$event['event_id']; ?>" class="card h-100 border-0 shadow-sm event-card" aria-label="View event: <?php echo htmlspecialchars($event['event_name'], ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="event-card-media">
-                                    <img class="event-card-image" src="<?php echo htmlspecialchars(getEventImageUrl($event['event_id'], $event['cover_image_path'] ?? null, $event['event_category'] ?? null)); ?>" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+                                    <img class="event-card-image" src="<?php echo htmlspecialchars($eventCardImage); ?>" alt="Photography for <?php echo htmlspecialchars($event['event_category'] ?? 'an upcoming event'); ?>" width="640" height="480" loading="lazy" decoding="async" referrerpolicy="no-referrer">
                                     <time class="event-date-chip" datetime="<?php echo htmlspecialchars(date('Y-m-d', strtotime($event['event_date']))); ?>">
                                         <span><?php echo htmlspecialchars(date('M', strtotime($event['event_date']))); ?></span>
                                         <strong><?php echo htmlspecialchars(date('d', strtotime($event['event_date']))); ?></strong>
@@ -183,7 +182,7 @@ $totalPages = ceil($totalEvents / $perPage);
                                     </span>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title fw-bold"><a href="event_details.php?event_id=<?php echo (int)$event['event_id']; ?>"><?php echo htmlspecialchars($event['event_name']); ?></a></h5>
+                                    <h2 class="card-title fw-bold"><?php echo htmlspecialchars($event['event_name']); ?></h2>
                                     <span class="event-category-label"><?php echo htmlspecialchars($event['event_category'] ?? 'Other'); ?></span>
                                     <p class="text-muted small mb-2">
                                         <i class="fas fa-user me-1"></i><?php echo htmlspecialchars($event['organizer_name']); ?>
@@ -198,20 +197,18 @@ $totalPages = ceil($totalEvents / $perPage);
                                 </div>
                                 <div class="card-footer bg-white border-top-0">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="fw-bold text-primary"><?php echo formatCurrency($event['ticket_price']); ?></span>
+                                        <span class="fw-bold text-primary"><?php echo (float)$event['ticket_price'] <= 0 ? 'Free' : 'From ' . htmlspecialchars(formatCurrency($event['ticket_price'])); ?></span>
                                         <span class="badge <?php echo $event['available_tickets'] > 0 ? 'bg-success' : 'bg-danger'; ?>">
                                             <?php echo $event['available_tickets'] > 0 ? $event['available_tickets'] . ' available' : 'Sold Out'; ?>
                                         </span>
                                     </div>
                                     <?php if ($event['available_tickets'] > 0): ?>
-                                        <a href="<?php echo getBaseUrl(); ?>event_details.php?event_id=<?php echo (int)$event['event_id']; ?>" class="btn btn-primary w-100 mt-2">
-                                            View event <i class="fas fa-arrow-right ms-1"></i>
-                                        </a>
+                                        <span class="btn btn-primary w-100 mt-2">View event <span aria-hidden="true">↗</span></span>
                                     <?php else: ?>
-                                        <button class="btn btn-secondary w-100 mt-2" disabled>Sold Out</button>
+                                        <span class="btn btn-secondary w-100 mt-2">Sold Out</span>
                                     <?php endif; ?>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>

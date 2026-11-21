@@ -34,9 +34,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
+    <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/header.php'; ?>
@@ -143,10 +141,7 @@ try {
                                                     <span class="badge bg-info">
                                                         <?php echo $event['tickets_sold']; ?>/<?php echo $event['max_capacity']; ?>
                                                     </span>
-                                                    <div class="progress mt-1" style="height: 5px; width: 80px;">
-                                                        <div class="progress-bar" role="progressbar" 
-                                                             style="width: <?php echo ($event['tickets_sold'] / $event['max_capacity']) * 100; ?>%"></div>
-                                                    </div>
+                                                    <progress class="progress progress--small mt-1" max="100" value="<?php echo min(100, ($event['tickets_sold'] / $event['max_capacity']) * 100); ?>" aria-label="Tickets sold"></progress>
                                                 </td>
                                                 <td class="fw-bold text-success"><?php echo formatCurrency($event['revenue']); ?></td>
                                                 <td>

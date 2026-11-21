@@ -44,17 +44,15 @@ $eventImage = getEventImageUrl($event['event_id'], $event['cover_image_path'] ??
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?php echo htmlspecialchars(truncateText($event['event_description'] ?? '', 155)); ?>">
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
+    <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
 </head>
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>
-<main class="event-details-page">
+<main id="main-content" class="event-details-page">
     <div class="container py-4 py-lg-5">
         <a class="event-back-link" href="browse_events.php"><i class="fas fa-arrow-left me-2" aria-hidden="true"></i>Back to explore</a>
         <div class="event-detail-hero mt-3">
-            <img src="<?php echo htmlspecialchars($eventImage); ?>" alt="" fetchpriority="high">
+            <img src="<?php echo htmlspecialchars($eventImage); ?>" alt="Photography for <?php echo htmlspecialchars($event['event_category'] ?? 'this event'); ?>" width="1200" height="800" fetchpriority="high">
             <div class="event-detail-image-overlay"></div>
             <span class="event-detail-category"><?php echo htmlspecialchars($event['event_category'] ?? 'Event'); ?></span>
             <div class="event-detail-hero-copy"><p class="event-detail-kicker">An experience to look forward to</p><h1><?php echo htmlspecialchars($event['event_name']); ?></h1><div class="event-detail-meta"><span><i class="far fa-calendar me-2" aria-hidden="true"></i><?php echo htmlspecialchars(date('D, M j', strtotime($event['event_date']))); ?></span><span><i class="fas fa-location-dot me-2" aria-hidden="true"></i><?php echo htmlspecialchars($event['city']); ?></span><span><i class="far fa-user me-2" aria-hidden="true"></i><?php echo htmlspecialchars($event['organizer_name']); ?></span></div></div>

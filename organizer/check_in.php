@@ -196,38 +196,7 @@ if ($selectedEventId > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
-    <style>
-        .scan-box {
-            border: 2px dashed rgba(36, 72, 63, 0.45);
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            background: #f0eee7;
-        }
-        .scan-box i {
-            font-size: 4rem;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-        .ticket-found {
-            animation: pulse 0.5s ease-in-out;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.95); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-        .attendee-card {
-            transition: all 0.2s ease;
-        }
-        .attendee-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-    </style>
+    <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/header.php'; ?>
@@ -445,7 +414,7 @@ if ($selectedEventId > 0) {
                                     <h5 class="mb-0"><i class="fas fa-users me-2"></i>Guest List</h5>
                                     <span class="badge bg-primary"><?php echo count($attendees); ?> attendees</span>
                                 </div>
-                                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                                <div class="card-body p-0 scroll-panel">
                                     <?php foreach ($attendees as $attendee): ?>
                                         <div class="attendee-card p-3 border-bottom <?php echo $attendee['ticket_status'] === 'checked_in' ? 'bg-light' : ''; ?>">
                                             <div class="d-flex justify-content-between align-items-center">

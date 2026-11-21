@@ -60,19 +60,9 @@ if (isset($_GET['download'])) {
     <html>
     <head>
         <title>Ticket - ' . htmlspecialchars($ticket['event_name']) . '</title>
-        <style>
-            body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
-            .ticket { border: 2px solid #333; padding: 20px; border-radius: 10px; }
-            .header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px; }
-            .qr-code { text-align: center; margin: 20px 0; }
-            .qr-code img { width: 200px; height: 200px; }
-            .details { margin: 15px 0; }
-            .details p { margin: 5px 0; }
-            .ticket-number { font-family: monospace; font-size: 18px; background: #f0f0f0; padding: 10px; text-align: center; }
-            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
-        </style>
+        <link rel="stylesheet" href="' . htmlspecialchars(getAssetUrl('css/main.css'), ENT_QUOTES, 'UTF-8') . '">
     </head>
-    <body>
+    <body class="ticket-download">
         <div class="ticket">
             <div class="header">
                 <h1>' . htmlspecialchars($ticket['event_name']) . '</h1>
@@ -114,59 +104,9 @@ $ticketNumberJson = json_encode($ticket['ticket_number'], JSON_HEX_TAG | JSON_HE
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View your EventMS ticket and entry QR code.">
     <title><?php echo $pageTitle; ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
-    <style>
-        .ticket-card {
-            background: var(--primary-color);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: var(--box-shadow);
-        }
-        .ticket-inner {
-            background: var(--surface-card);
-            margin: 10px;
-            border-radius: 10px;
-            padding: 30px;
-        }
-        .ticket-header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px dashed var(--border-light);
-            margin-bottom: 20px;
-        }
-        .qr-container {
-            text-align: center;
-            padding: 20px;
-            background: #f0eee7;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        .ticket-number-box {
-            background: #f0eee7;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-family: monospace;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-        }
-        .status-badge {
-            font-size: 1rem;
-            padding: 10px 20px;
-        }
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-    </style>
+    <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/header.php'; ?>

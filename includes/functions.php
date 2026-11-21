@@ -86,6 +86,27 @@ function getEventImageUrl($eventId, $coverImagePath = null, $category = null) {
     return 'https://images.unsplash.com/' . $image . '?auto=format&fit=crop&w=1000&q=84';
 }
 
+/** Choose a distinct photographic fallback for each card on the current page. */
+function getUniqueEventImageUrl($eventId, $coverImagePath = null, &$usedImageUrls = []) {
+    $imageUrl = getEventImageUrl($eventId, $coverImagePath, null);
+    $localCoverExists = is_string($coverImagePath)
+        && preg_match('/\Aevent-covers\/[a-f0-9]{32}\.(?:jpg|png|webp)\z/', $coverImagePath)
+        && is_file(__DIR__ . '/../assets/' . str_replace('/', DIRECTORY_SEPARATOR, $coverImagePath));
+    if ($localCoverExists) {
+        $usedImageUrls[] = $imageUrl;
+        return $imageUrl;
+    }
+    $candidateId = (int)$eventId;
+    $attempts = 0;
+    while (in_array($imageUrl, $usedImageUrls, true) && $attempts < 10) {
+        $candidateId++;
+        $imageUrl = getEventImageUrl($candidateId, null, null);
+        $attempts++;
+    }
+    $usedImageUrls[] = $imageUrl;
+    return $imageUrl;
+}
+
 function getEventCategories() {
     return ['Arts & Culture', 'Community', 'Food & Drink', 'Health & Wellness', 'Learning', 'Music', 'Nightlife', 'Sports', 'Technology', 'Other'];
 }

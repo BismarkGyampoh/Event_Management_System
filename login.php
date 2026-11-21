@@ -264,19 +264,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sign in to manage your EventMS bookings or organiser account.">
     <title>Login - Event Management System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
+    <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
 </head>
 <body class="auth-page d-flex align-items-center py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-5">
+            <aside class="col-md-6 auth-story">
+                <img src="<?php echo htmlspecialchars(getEventImageUrl(4, null, 'Music')); ?>" alt="People gathered at a live music event" width="900" height="1100" fetchpriority="high">
+                <div class="auth-story__copy"><a class="wordmark wordmark--footer" href="<?php echo getBaseUrl(); ?>"><span class="wordmark__symbol" aria-hidden="true">e</span>eventms</a><p>Make room for a night you’ll remember.</p></div>
+            </aside>
+            <div class="col-md-6">
                 <div class="login-card p-5">
                     <div class="text-center mb-4">
                         <i class="fas fa-calendar-alt fa-4x text-primary mb-3"></i>
-                        <h3 class="fw-bold">EventMS</h3>
+                        <h1 class="h3 fw-bold">Sign in</h1>
                         <p class="text-muted">Sign in to your account</p>
                         <small class="text-muted fst-italic">
                             <i class="fas fa-info-circle me-1"></i>
@@ -295,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php echo csrfTokenField(); ?>
                         
                         <div class="mb-3">
-                            <label class="form-label">Username or Email</label>
+                            <label class="form-label" for="identifier">Username or Email</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 <input type="text" class="form-control" id="identifier" name="identifier" 
@@ -308,12 +311,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Password</label>
+                            <label class="form-label" for="password">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                 <input type="password" class="form-control" id="password" name="password" 
                                        placeholder="Enter password" required>
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Show password">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -343,7 +346,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js" integrity="sha384-WyOxWvTyr1QaMPfiPJSv76iReVthorl5uWlFtZPyK0IEB0hGzo9y5Bp9mYanr8Bu" crossorigin="anonymous"></script>
     <script src="<?php echo getAssetUrl('js/script.js'); ?>"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -353,8 +355,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             togglePassword.addEventListener('click', function() {
                 const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
                 password.setAttribute('type', type);
-                this.querySelector('i').classList.toggle('fa-eye');
-                this.querySelector('i').classList.toggle('fa-eye-slash');
+                this.textContent = type === 'password' ? 'Show' : 'Hide';
+                this.setAttribute('aria-label', type === 'password' ? 'Show password' : 'Hide password');
             });
         });
     </script>

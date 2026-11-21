@@ -105,15 +105,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create an EventMS attendee account to keep your event plans and tickets together.">
     <title>Create attendee account - EventMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?php echo getAssetUrl('css/style.css'); ?>" rel="stylesheet">
+    <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
 </head>
 <body class="auth-page d-flex align-items-center py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-5">
+            <aside class="col-md-6 auth-story">
+                <img src="<?php echo htmlspecialchars(getEventImageUrl(4, null, 'Music')); ?>" alt="People gathered at a live music event" width="900" height="1100" fetchpriority="high">
+                <div class="auth-story__copy"><a class="wordmark wordmark--footer" href="<?php echo getBaseUrl(); ?>"><span class="wordmark__symbol" aria-hidden="true">e</span>eventms</a><p>Make room for a night you’ll remember.</p></div>
+            </aside>
+            <div class="col-md-6">
                 <div class="login-card">
                     <div class="text-center mb-4">
                         <i class="fas fa-calendar-alt text-primary mb-3"></i>
@@ -152,12 +155,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label class="form-label" for="password">Password</label>
                             <input class="form-control" type="password" id="password" name="password"
                                    autocomplete="new-password" minlength="12" required>
+                            <button class="password-toggle" type="button" data-password-target="password" aria-label="Show password">Show</button>
                             <small class="form-text text-muted">Use at least 12 characters.</small>
                         </div>
                         <div class="mb-4">
                             <label class="form-label" for="confirm_password">Confirm password</label>
                             <input class="form-control" type="password" id="confirm_password" name="confirm_password"
                                    autocomplete="new-password" minlength="12" required>
+                            <button class="password-toggle" type="button" data-password-target="confirm_password" aria-label="Show confirmation password">Show</button>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Create account</button>
                     </form>
@@ -173,5 +178,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
+    <script src="<?php echo getAssetUrl('js/script.js'); ?>" defer></script>
 </body>
 </html>
