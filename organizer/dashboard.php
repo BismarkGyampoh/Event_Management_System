@@ -62,7 +62,7 @@ try {
     
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show" id="sidebarMenu">
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar dashboard-sidebar" id="sidebarMenu" aria-label="Organizer dashboard navigation">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -101,16 +101,19 @@ try {
                 </div>
             </nav>
             
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-tachometer-alt me-2"></i>Organizer Dashboard</h1>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 role-dashboard organizer-dashboard">
+                <header class="dashboard-page-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div class="dashboard-heading-copy">
+                        <p class="section-eyebrow mb-1">Your event workspace</p>
+                        <h1>Organizer Dashboard</h1>
+                    </div>
                     <a href="create_event.php" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i>Create Event
                     </a>
-                </div>
+                </header>
                 
                 <!-- Statistics Cards -->
-                <div class="row g-4 mb-4">
+                <div class="row g-4 mb-4 dashboard-stat-grid">
                     <div class="col-md-3">
                         <div class="card text-center border-0 shadow-sm h-100">
                             <div class="card-body">
@@ -150,11 +153,11 @@ try {
                 </div>
 
                 <?php if ($marketStats): ?>
-                <section class="card border-0 shadow-sm mb-4"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Online payment overview</h2><a href="payment_account.php" class="btn btn-sm btn-outline-primary">Settlement account</a></div><div class="row g-3 mt-2"><div class="col-sm-6 col-lg"><small class="text-muted">Gross ticket sales</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['gross_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Platform commission</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['commission_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Gateway fees</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['fees_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Organizer allocation</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['net_minor']) / 100, 2); ?></div></div></div><p class="small text-muted mt-3 mb-0">Organizer allocation is calculated from verified payments. It does not confirm that a settlement has reached your bank.</p></div></section>
+                <section class="card border-0 shadow-sm mb-4 dashboard-panel"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Online payment overview</h2><a href="payment_account.php" class="btn btn-sm btn-outline-primary">Settlement account</a></div><div class="row g-3 mt-2"><div class="col-sm-6 col-lg"><small class="text-muted">Gross ticket sales</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['gross_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Platform commission</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['commission_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Gateway fees</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['fees_minor']) / 100, 2); ?></div></div><div class="col-sm-6 col-lg"><small class="text-muted">Organizer allocation</small><div class="fw-semibold">GHS <?php echo number_format(((int)$marketStats['net_minor']) / 100, 2); ?></div></div></div><p class="small text-muted mt-3 mb-0">Organizer allocation is calculated from verified payments. It does not confirm that a settlement has reached your bank.</p></div></section>
                 <?php endif; ?>
                 
                 <!-- My Events -->
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm dashboard-panel">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>My Events</h5>
                         <a href="my_events.php" class="btn btn-sm btn-outline-primary">View All</a>
@@ -226,7 +229,7 @@ try {
                 <!-- Quick Actions -->
                 <div class="row mt-4">
                     <div class="col-lg-4">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm dashboard-panel">
                             <div class="card-body text-center">
                                 <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
                                 <h5>Create New Event</h5>
@@ -236,7 +239,7 @@ try {
                         </div>
                     </div>
                     <div class="col-lg-4">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm dashboard-panel">
                             <div class="card-body text-center">
                                 <i class="fas fa-ticket-alt fa-3x text-info mb-3"></i>
                                 <h5>View Bookings</h5>
@@ -246,7 +249,7 @@ try {
                         </div>
                     </div>
                     <div class="col-lg-4">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm dashboard-panel">
                             <div class="card-body text-center">
                                 <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
                                 <h5>Revenue Report</h5>

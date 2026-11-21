@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show" id="sidebarMenu">
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar dashboard-sidebar booking-sidebar collapse show" id="sidebarMenu" aria-label="Attendee booking navigation">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </nav>
             
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 booking-page">
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 booking-page attendee-booking-page">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom booking-page-header">
                     <div><p class="section-eyebrow mb-1">One step closer</p><h1>Complete your booking</h1></div>
                     <a href="browse_events.php" class="btn btn-outline-secondary">

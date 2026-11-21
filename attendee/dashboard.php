@@ -75,7 +75,7 @@ try {
     
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show" id="sidebarMenu">
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar dashboard-sidebar collapse show" id="sidebarMenu" aria-label="Attendee dashboard navigation">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -107,16 +107,19 @@ try {
                 </div>
             </nav>
             
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-tachometer-alt me-2"></i>Welcome, <?php echo htmlspecialchars(getCurrentUserName()); ?>!</h1>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 role-dashboard attendee-dashboard">
+                <header class="dashboard-page-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div class="dashboard-heading-copy">
+                        <p class="section-eyebrow mb-1">Your event life</p>
+                        <h1>Welcome, <?php echo htmlspecialchars(getCurrentUserName()); ?>!</h1>
+                    </div>
                     <a href="browse_events.php" class="btn btn-primary">
                         <i class="fas fa-search me-1"></i>Browse Events
                     </a>
-                </div>
+                </header>
                 
                 <!-- Statistics Cards -->
-                <div class="row g-4 mb-4">
+                <div class="row g-4 mb-4 dashboard-stat-grid">
                     <div class="col-md-3">
                         <div class="card text-center border-0 shadow-sm h-100">
                             <div class="card-body">
@@ -159,7 +162,7 @@ try {
                 <div class="row">
                     <!-- My Bookings -->
                     <div class="col-lg-8 mb-4">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm dashboard-panel">
                             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>My Recent Bookings</h5>
                                 <a href="my_bookings.php" class="btn btn-sm btn-outline-primary">View All</a>
@@ -173,7 +176,7 @@ try {
                                         <a href="browse_events.php" class="btn btn-primary">Browse Events</a>
                                     </div>
                                 <?php else: ?>
-                                    <div class="list-group list-group-flush">
+                                    <div class="list-group list-group-flush attendee-bookings-list">
                                         <?php foreach ($myBookings as $booking): ?>
                                             <div class="list-group-item">
                                                 <div class="d-flex justify-content-between align-items-start">
@@ -201,7 +204,7 @@ try {
                     
                     <!-- Upcoming Events -->
                     <div class="col-lg-4 mb-4">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm dashboard-panel">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Discover Events</h5>
                             </div>
@@ -228,7 +231,7 @@ try {
                         </div>
                         
                         <!-- Quick Links -->
-                        <div class="card border-0 shadow-sm mt-3">
+                        <div class="card border-0 shadow-sm mt-3 dashboard-panel">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0"><i class="fas fa-link me-2"></i>Quick Links</h5>
                             </div>

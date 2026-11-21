@@ -2095,6 +2095,126 @@ footer a:hover { color: #ff9a7f !important; }
 .booking-choice:has(input:checked) { border-color: #a98ce8; background: #faf8ff; }
 .booking-summary-card { position: sticky; top: calc(var(--header-height) + 20px); }
 
+/* Role-specific workspace polish, with the same visual language as event discovery. */
+.dashboard-sidebar {
+    background: #fff !important;
+}
+.dashboard-sidebar .nav-link {
+    margin-inline: .55rem;
+    border-left: 3px solid transparent;
+}
+.dashboard-sidebar .nav-link.active {
+    border-left-color: var(--accent-coral);
+    background: #f5f1fb;
+    color: var(--primary-dark);
+}
+.dashboard-page-header {
+    gap: 16px;
+    border-color: var(--border-light) !important;
+}
+.dashboard-heading-copy h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 3vw, 2.45rem);
+    letter-spacing: -.05em;
+}
+.dashboard-heading-copy .section-eyebrow {
+    color: var(--primary-dark);
+}
+.dashboard-stat-grid > [class*="col-"] > .card {
+    height: 100%;
+    border: 1px solid var(--border-light);
+    border-radius: 15px;
+    background: linear-gradient(145deg, #fff, #fcfaff);
+    box-shadow: 0 8px 26px rgba(31,24,65,.045);
+}
+.dashboard-stat-grid > [class*="col-"] > .card .card-body {
+    min-height: 145px;
+}
+.dashboard-stat-grid > [class*="col-"] > .card h4 {
+    font-variant-numeric: tabular-nums;
+}
+.dashboard-panel {
+    border: 1px solid var(--border-light) !important;
+    border-radius: 15px !important;
+    box-shadow: 0 8px 26px rgba(31,24,65,.045) !important;
+}
+.dashboard-panel > .card-header {
+    min-height: 58px;
+}
+.dashboard-panel > .card-header h5,
+.dashboard-panel > .card-body > .d-flex h2 {
+    font-size: 1rem;
+    font-weight: 750;
+}
+.attendee-bookings-list .list-group-item {
+    padding: 1rem .25rem;
+    border-color: var(--border-light);
+}
+.attendee-bookings-list .list-group-item h6 {
+    font-weight: 750;
+}
+.organizer-dashboard .table td,
+.admin-dashboard .table td {
+    padding-block: .9rem;
+}
+.organizer-dashboard .table td:first-child strong,
+.admin-dashboard .table td:first-child a {
+    color: var(--text-main);
+}
+.organizer-dashboard .table td:first-child strong {
+    display: block;
+    max-width: 24ch;
+    line-height: 1.35;
+}
+.admin-dashboard .dashboard-panel .list-group-item,
+.admin-dashboard .dashboard-panel .list-group-item:last-child {
+    border-color: var(--border-light);
+}
+
+.event-card .card-header.event-card-location {
+    padding: 14px 18px 0;
+    border: 0;
+    background: #fff;
+}
+.event-card .card-footer {
+    padding: 0 18px 18px;
+}
+.event-card .card-footer .btn {
+    margin-top: 14px !important;
+}
+.discovery-filter-panel .form-control,
+.discovery-filter-panel .form-select {
+    background-color: #fff;
+}
+.category-filter-pills {
+    scroll-snap-type: x proximity;
+}
+.category-filter-pill {
+    scroll-snap-align: start;
+    transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+.event-detail-hero {
+    box-shadow: 0 18px 48px rgba(31,24,65,.12);
+}
+.event-detail-hero-copy h1 {
+    text-wrap: balance;
+}
+.ticket-selection-card {
+    border-color: #ded8eb;
+    box-shadow: 0 16px 38px rgba(31,24,65,.09);
+}
+.ticket-option {
+    align-items: center;
+}
+.attendee-booking-page .booking-main-card .card-header,
+.attendee-booking-page .booking-summary-card .card-header {
+    padding: 1rem 1.25rem;
+}
+.attendee-booking-page .booking-main-card .card-header h5,
+.attendee-booking-page .booking-summary-card .card-header h5 {
+    font-weight: 750;
+}
+
 @media (max-width: 1199.98px) {
     .category-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
 }
@@ -2102,6 +2222,7 @@ footer a:hover { color: #ff9a7f !important; }
     .container-fluid > .row > .sidebar { background: #f2eff8 !important; }
     .ticket-selection-card { position: static; }
     .hero-photo-board { height: 390px; }
+    .dashboard-sidebar .nav-link { margin-inline: 0; }
 }
 @media (max-width: 767.98px) {
     .hero-section { padding: 3rem 0; }
@@ -2127,6 +2248,25 @@ footer a:hover { color: #ff9a7f !important; }
     .container-fluid > .row > main .row.g-4.mb-4 > [class*="col-"] { width: 50%; }
     .container-fluid > .row > main[class*="col-"] { padding: 1.25rem .85rem; }
     .container-fluid > .row > .sidebar { padding: .55rem .65rem; }
+    .dashboard-sidebar .position-sticky { position: static !important; }
+    .dashboard-sidebar .nav {
+        flex-direction: row !important;
+        flex-wrap: nowrap;
+        gap: 5px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+    .dashboard-sidebar .nav-item { flex: 0 0 auto; }
+    .dashboard-sidebar .nav-link { white-space: nowrap; }
+    .dashboard-page-header { align-items: flex-start !important; }
+    .dashboard-page-header > .btn,
+    .dashboard-page-header .btn-toolbar { margin-top: 6px; }
+    .dashboard-stat-grid > [class*="col-"] > .card .card-body { min-height: 125px; }
+    .event-details-page .row.g-4 > aside { order: -1; }
+    .discovery-filter-panel form > div { width: 50%; }
+    .discovery-filter-panel form > div:first-child,
+    .discovery-filter-panel form > div:last-child { width: 100%; }
     .category-filter-pills { margin-right: -12px; padding-right: 12px; }
     .category-filter-pill { min-height: 37px; padding-inline: 12px; font-size: .78rem; }
     .footer-bottom { margin-top: 1.6rem; }
@@ -2140,8 +2280,13 @@ footer a:hover { color: #ff9a7f !important; }
     .category-arrow { display: none; }
     .event-detail-hero { min-height: 310px; }
     .events-results-header { align-items: start; flex-direction: column; }
-    .container-fluid > .row > main .row.g-4.mb-4 > [class*="col-"] { width: 100%; }
+    .container-fluid > .row > main .row.g-4.mb-4 > [class*="col-"] { width: 50%; }
     .booking-event-image { height: 175px; }
+    .dashboard-stat-grid { --bs-gutter-x: .65rem; --bs-gutter-y: .65rem; }
+    .dashboard-stat-grid > [class*="col-"] > .card .card-body { padding: .9rem; }
+    .dashboard-stat-grid > [class*="col-"] > .card h4 { font-size: 1.4rem; }
+    .dashboard-page-header { gap: 12px; }
+    .dashboard-page-header > .btn { flex: 0 0 auto; }
     .footer-bottom { align-items: start; flex-direction: column; gap: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {

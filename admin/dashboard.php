@@ -74,7 +74,7 @@ try {
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse show" id="sidebarMenu">
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar dashboard-sidebar" id="sidebarMenu" aria-label="Administrator dashboard navigation">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -120,9 +120,12 @@ try {
             </nav>
             
             <!-- Main Content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h1>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 role-dashboard admin-dashboard">
+                <header class="dashboard-page-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <div class="dashboard-heading-copy">
+                        <p class="section-eyebrow mb-1">Platform overview</p>
+                        <h1>Admin Dashboard</h1>
+                    </div>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group me-2">
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
@@ -130,10 +133,10 @@ try {
                             </button>
                         </div>
                     </div>
-                </div>
+                </header>
                 
                 <!-- Statistics Cards -->
-                <div class="row g-4 mb-4">
+                <div class="row g-4 mb-4 dashboard-stat-grid">
                     <div class="col-md-4 col-xl-2">
                         <div class="card text-center border-0 shadow-sm h-100">
                             <div class="card-body">
@@ -193,7 +196,7 @@ try {
                 <div class="row">
                     <!-- Recent Events -->
                     <div class="col-lg-8 mb-4">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm dashboard-panel">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Recent Events</h5>
                             </div>
@@ -244,7 +247,7 @@ try {
                     
                     <!-- Quick Actions -->
                     <div class="col-lg-4 mb-4">
-                        <div class="card border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm dashboard-panel">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
                             </div>
@@ -267,7 +270,7 @@ try {
                         </div>
                         
                         <!-- Recent Audit Logs -->
-                        <div class="card border-0 shadow-sm mt-4">
+                        <div class="card border-0 shadow-sm mt-4 dashboard-panel">
                             <div class="card-header bg-white">
                                 <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
                             </div>
