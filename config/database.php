@@ -10,16 +10,21 @@ $dbUser = getenv('DB_USER') ?: 'postgres';
 $dbPassword = getenv('DB_PASSWORD');
 $dbSslMode = getenv('DB_SSLMODE') ?: 'prefer';
 
-$forwardedProtocolForHeaders = getenv('APP_TRUST_PROXY') === '1'
+$renderPublicScheme = getenv('RENDER') === 'true'
+    ? strtolower((string)parse_url(getenv('RENDER_EXTERNAL_URL') ?: '', PHP_URL_SCHEME))
+    : '';
+$trustForwardedHeaders = getenv('APP_TRUST_PROXY') === '1' || $renderPublicScheme === 'https';
+$forwardedProtocolForHeaders = $trustForwardedHeaders
     ? strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')[0]))
     : '';
 $requestIsHttps = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
-    || $forwardedProtocolForHeaders === 'https';
+    || $forwardedProtocolForHeaders === 'https'
+    || $renderPublicScheme === 'https';
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
-header("Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https://images.unsplash.com; font-src 'self' data: https://cdnjs.cloudflare.com; connect-src 'self'");
+header("Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https://images.unsplash.com; font-src 'self' data: https://cdnjs.cloudflare.com; connect-src 'self' https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/");
 if ($requestIsHttps) {
     header('Strict-Transport-Security: max-age=31536000');
 }
@@ -65,11 +70,12 @@ function closeDbConnection()
 
 // Session configuration
 if (session_status() === PHP_SESSION_NONE) {
-    $forwardedProtocol = getenv('APP_TRUST_PROXY') === '1'
+    $forwardedProtocol = $trustForwardedHeaders
         ? strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')[0]))
         : '';
     $isHttps = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
-        || $forwardedProtocol === 'https';
+        || $forwardedProtocol === 'https'
+        || $renderPublicScheme === 'https';
 
     ini_set('session.use_strict_mode', '1');
     ini_set('session.use_only_cookies', '1');

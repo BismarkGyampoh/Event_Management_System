@@ -9,11 +9,16 @@
  * @return string
  */
 function getBaseUrl() {
-    $forwardedProtocol = getenv('APP_TRUST_PROXY') === '1'
+    $renderPublicScheme = getenv('RENDER') === 'true'
+        ? strtolower((string)parse_url(getenv('RENDER_EXTERNAL_URL') ?: '', PHP_URL_SCHEME))
+        : '';
+    $trustForwardedHeaders = getenv('APP_TRUST_PROXY') === '1' || $renderPublicScheme === 'https';
+    $forwardedProtocol = $trustForwardedHeaders
         ? strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')[0]))
         : '';
     $isHttps = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
-        || $forwardedProtocol === 'https';
+        || $forwardedProtocol === 'https'
+        || $renderPublicScheme === 'https';
     $protocol = $isHttps ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     if (!preg_match('/\A(?:[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[a-f0-9:]+\])(?::[0-9]{1,5})?\z/i', $host)) {
