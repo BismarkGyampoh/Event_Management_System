@@ -89,6 +89,7 @@ $totalPages = ceil($totalEvents / $perPage);
     <meta name="description" content="Browse upcoming events by date, place and category on EventMS.">
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
     <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="<?php echo getAssetUrl('favicon.svg'); ?>">
 </head>
 <body>
     <?php include __DIR__ . '/includes/header.php'; ?>

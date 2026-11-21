@@ -45,6 +45,7 @@ $eventImage = getEventImageUrl($event['event_id'], $event['cover_image_path'] ??
     <meta name="description" content="<?php echo htmlspecialchars(truncateText($event['event_description'] ?? '', 155)); ?>">
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
     <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="<?php echo getAssetUrl('favicon.svg'); ?>">
 </head>
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>

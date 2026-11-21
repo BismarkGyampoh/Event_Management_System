@@ -3,6 +3,9 @@
 This project is a PHP application. Render runs it as a Docker web service, and
 Supabase provides the PostgreSQL database. Vercel is not part of this deployment.
 
+For the complete system map, roles, routes, data model, security controls, and
+current feature boundaries, see [`SYSTEM_DOCUMENTATION.md`](SYSTEM_DOCUMENTATION.md).
+
 ## 1. Prepare Supabase
 
 1. Create a Supabase project and save its database password.

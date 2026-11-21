@@ -81,6 +81,7 @@ try {
     <title><?php echo $pageTitle; ?></title>
     <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="icon" type="image/svg+xml" href="<?php echo getAssetUrl('favicon.svg'); ?>">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/header.php'; ?>

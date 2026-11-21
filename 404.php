@@ -12,6 +12,7 @@ $pageTitle = 'Page not found | EventMS';
   <meta name="description" content="This EventMS page could not be found. Browse upcoming events and make a new plan.">
   <title><?php echo htmlspecialchars($pageTitle); ?></title>
   <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="<?php echo getAssetUrl('favicon.svg'); ?>">
 </head>
 <body>
 <?php include __DIR__ . '/includes/header.php'; ?>

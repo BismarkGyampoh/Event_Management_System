@@ -64,7 +64,8 @@ if ($account) $account['provider_verified'] = isDatabaseBooleanTrue($account['pr
 ?>
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settlement account</title><link href="../assets/css/main.css" rel="stylesheet"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settlement account</title><link href="../assets/css/main.css" rel="stylesheet"><link rel="icon" type="image/svg+xml" href="<?php echo getAssetUrl('favicon.svg'); ?>">
+</head>
 <body><?php include __DIR__ . '/../includes/header.php'; ?>
 <main class="container py-4">
     <h1 class="h2">Settlement account</h1>

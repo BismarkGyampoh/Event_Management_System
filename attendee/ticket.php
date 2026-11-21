@@ -60,6 +60,7 @@ if (isset($_GET['download'])) {
     <html>
     <head>
         <title>Ticket - ' . htmlspecialchars($ticket['event_name']) . '</title>
+        <link rel="icon" type="image/svg+xml" href="' . htmlspecialchars(getAssetUrl('favicon.svg'), ENT_QUOTES, 'UTF-8') . '">
         <link rel="stylesheet" href="' . htmlspecialchars(getAssetUrl('css/main.css'), ENT_QUOTES, 'UTF-8') . '">
     </head>
     <body class="ticket-download">
@@ -107,6 +108,7 @@ $ticketNumberJson = json_encode($ticket['ticket_number'], JSON_HEX_TAG | JSON_HE
     <meta name="description" content="View your EventMS ticket and entry QR code.">
     <title><?php echo $pageTitle; ?></title>
     <link href="<?php echo getAssetUrl('css/main.css'); ?>" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="<?php echo getAssetUrl('favicon.svg'); ?>">
 </head>
 <body>
     <?php include __DIR__ . '/../includes/header.php'; ?>
