@@ -67,6 +67,21 @@ try {
                         <button class="btn btn-primary" type="submit">Find events</button>
                     </form>
                 </div>
+                <div class="col-lg-5 hero-art">
+                    <div class="hero-photo-collage" aria-label="A glimpse of the events you can find on EventMS">
+                        <figure class="hero-photo hero-photo--main">
+                            <img src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&amp;fit=crop&amp;w=1000&amp;q=86" alt="A crowd gathered for an outdoor live music performance" width="800" height="1000" fetchpriority="high">
+                            <figcaption>Live music</figcaption>
+                        </figure>
+                        <figure class="hero-photo hero-photo--top">
+                            <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&amp;fit=crop&amp;w=700&amp;q=84" alt="Friends meeting at an outdoor festival" width="700" height="500" fetchpriority="high">
+                        </figure>
+                        <figure class="hero-photo hero-photo--bottom">
+                            <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&amp;fit=crop&amp;w=700&amp;q=84" alt="Stage lights at a night concert" width="700" height="500" loading="lazy" decoding="async">
+                        </figure>
+                        <span class="hero-photo-note"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1v18M1 10h18M3.6 3.6l12.8 12.8m0-12.8L3.6 16.4"/></svg> Find your people. Go somewhere.</span>
+                    </div>
+                </div>
         </div>
         </div>
     </header>
